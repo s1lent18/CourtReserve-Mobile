@@ -10,8 +10,8 @@ import androidx.navigation.compose.rememberNavController
 import com.aircash.courtreserve.models.modules.UserPreferences
 import com.aircash.courtreserve.view.Start
 import com.aircash.courtreserve.view.UserLanding
+import com.aircash.courtreserve.view.VendorLanding
 import kotlinx.coroutines.launch
-
 
 @Composable
 fun NavGraph(
@@ -44,6 +44,12 @@ fun NavGraph(
             route = Screens.UserLanding.route
         ) {
             UserLanding(navController = navController)
+        }
+
+        this.composable(
+            route = Screens.VendorLanding.route
+        ) {
+            VendorLanding(navController = navController)
         }
     }
 }

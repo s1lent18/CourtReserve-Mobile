@@ -3,6 +3,7 @@ package com.aircash.courtreserve.models.interfaces
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.aircash.courtreserve.models.model.UserData
+import com.aircash.courtreserve.models.model.VendorData
 import kotlinx.coroutines.flow.Flow
 
 val USER_DATA_KEY: Preferences.Key<String> = stringPreferencesKey("userData")
@@ -11,12 +12,12 @@ val TIMESTAMP_KEY = stringPreferencesKey("timestamp")
 
 interface UserPref {
 
-    //fun getVendorData(): Flow<TeacherData?>
+    fun getVendorData(): Flow<VendorData?>
     fun getUserData(): Flow<UserData?>
     fun getUserRole(): Flow<String>
     fun getTimeStamp(): Flow<String>
 
-    //suspend fun saveVendorData(teacherData: TeacherData)
+    suspend fun saveVendorData(vendorData: VendorData)
     suspend fun saveUserData(userData: UserData)
     suspend fun saveUserRole(role: String)
     suspend fun saveTimeStamp(timestamp: String)

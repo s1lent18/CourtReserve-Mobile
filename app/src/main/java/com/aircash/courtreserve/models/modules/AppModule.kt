@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.aircash.courtreserve.models.interfaces.UserPref
-import com.aircash.courtreserve.models.model.UserPrefImpl
+import com.aircash.courtreserve.models.interfaces.UserPrefImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

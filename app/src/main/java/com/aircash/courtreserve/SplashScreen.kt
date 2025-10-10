@@ -27,6 +27,7 @@ import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.secondary
 import com.aircash.courtreserve.viewmodels.navigation.Screens
 import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
+import com.aircash.courtreserve.viewmodels.viewmodel.VendorTokenViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -57,11 +58,11 @@ class SplashScreen : ComponentActivity() {
         var isSplashComplete by remember { mutableStateOf(false) }
         var userRole by remember { mutableStateOf<String?>(null) }
         val userTokenViewModel = hiltViewModel<UserTokenViewModel>()
-        //val vendorTokenViewModel = hiltViewModel<TeacherTokenViewModel>()
+        val vendorTokenViewModel = hiltViewModel<VendorTokenViewModel>()
         val studentData by userTokenViewModel.userData.collectAsStateWithLifecycle()
-        //val vendorData by vendorTokenViewModel.teacherData.collectAsStateWithLifecycle()
+        val vendorData by vendorTokenViewModel.vendorData.collectAsStateWithLifecycle()
         val studentSessionStatus by userTokenViewModel.session.collectAsStateWithLifecycle()
-        //val vendorSessionStatus by vendorTokenViewModel.session.collectAsStateWithLifecycle()
+        val vendorSessionStatus by vendorTokenViewModel.session.collectAsStateWithLifecycle()
         val text = "Court Reserve"
         var displayedText by remember { mutableStateOf("") }
 
@@ -88,7 +89,7 @@ class SplashScreen : ComponentActivity() {
             isSplashComplete = true
         }
 
-        LaunchedEffect(isSplashComplete, userRole, studentSessionStatus) {
+        LaunchedEffect(isSplashComplete, userRole, studentSessionStatus, vendorSessionStatus) {
             if (!isSplashComplete || userRole == null) return@LaunchedEffect
 
             val startDestination = when (userRole) {
@@ -99,12 +100,12 @@ class SplashScreen : ComponentActivity() {
                         Screens.UserLanding.route
                 }
 
-//                "Vendor" -> {
-//                    if (teacherSessionStatus && teacherData?.token?.isNotEmpty() == true)
-//                        Screens.TeacherHome.route
-//                    else
-//                        Screens.TeacherLanding.route
-//                }
+                "Vendor" -> {
+                    if (vendorSessionStatus && vendorData?.token?.isNotEmpty() == true)
+                        Screens.VendorHome.route
+                    else
+                        Screens.VendorLanding.route
+                }
 
                 else -> Screens.Start.route
             }

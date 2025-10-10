@@ -4,6 +4,8 @@ import android.content.Context
 import com.aircash.courtreserve.R
 import com.aircash.courtreserve.models.interfaces.UserLoginAPI
 import com.aircash.courtreserve.models.interfaces.UserRegistrationAPI
+import com.aircash.courtreserve.models.interfaces.VendorLoginAPI
+import com.aircash.courtreserve.models.interfaces.VendorRegistrationAPI
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,5 +45,17 @@ object NetworkModule {
     @Singleton
     fun provideUserRegisterAPI(retrofit: Retrofit) : UserRegistrationAPI {
         return retrofit.create(UserRegistrationAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVendorLoginAPI(retrofit: Retrofit) : VendorLoginAPI {
+        return retrofit.create(VendorLoginAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVendorRegisterAPI(retrofit: Retrofit) : VendorRegistrationAPI {
+        return retrofit.create(VendorRegistrationAPI::class.java)
     }
 }

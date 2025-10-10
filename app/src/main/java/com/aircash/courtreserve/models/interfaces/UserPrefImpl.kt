@@ -1,18 +1,17 @@
-package com.aircash.courtreserve.models.model
+package com.aircash.courtreserve.models.interfaces
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
-import com.aircash.courtreserve.models.interfaces.TIMESTAMP_KEY
-import com.aircash.courtreserve.models.interfaces.USER_DATA_KEY
-import com.aircash.courtreserve.models.interfaces.UserPref
-import com.aircash.courtreserve.models.modules.UserPreferences.USER_ROLE_KEY
+import com.aircash.courtreserve.models.model.UserData
+import com.aircash.courtreserve.models.model.VendorData
+import com.aircash.courtreserve.models.modules.UserPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class UserPrefImpl (private val dataStore: DataStore<Preferences>) : UserPref {
 
@@ -23,7 +22,7 @@ class UserPrefImpl (private val dataStore: DataStore<Preferences>) : UserPref {
             }.map { preferences ->
                 preferences[USER_DATA_KEY]?.let {
                     try {
-                        Json.decodeFromString<UserData>(it)
+                        Json.Default.decodeFromString<UserData>(it)
                     } catch (_: Exception) {
                         null
                     }
@@ -31,20 +30,20 @@ class UserPrefImpl (private val dataStore: DataStore<Preferences>) : UserPref {
             }
     }
 
-//    override fun getVendorData(): Flow<VendorData?> {
-//        return dataStore.data
-//            .catch {
-//                emit(emptyPreferences())
-//            }.map { preferences ->
-//                preferences[VENDOR_DATA_KEY]?.let {
-//                    try {
-//                        Json.decodeFromString<VendorData>(it)
-//                    } catch (_: Exception) {
-//                        null
-//                    }
-//                }
-//            }
-//    }
+    override fun getVendorData(): Flow<VendorData?> {
+        return dataStore.data
+            .catch {
+                emit(emptyPreferences())
+            }.map { preferences ->
+                preferences[VENDOR_DATA_KEY]?.let {
+                    try {
+                        Json.decodeFromString<VendorData>(it)
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
+            }
+    }
 
     override fun getTimeStamp(): Flow<String> {
         return dataStore.data.catch {
@@ -58,23 +57,23 @@ class UserPrefImpl (private val dataStore: DataStore<Preferences>) : UserPref {
         return dataStore.data.catch {
             emit(emptyPreferences())
         }.map {
-            it[USER_ROLE_KEY]?: ""
+            it[UserPreferences.USER_ROLE_KEY]?: ""
         }
     }
 
     override suspend fun saveUserData(userData: UserData) {
-        val jsonString = Json.encodeToString(userData)
+        val jsonString = Json.Default.encodeToString(userData)
         dataStore.edit { preferences ->
             preferences[USER_DATA_KEY] = jsonString
         }
     }
 
-//    override suspend fun saveVendorData(vendorData : VendorData) {
-//        val jsonString = Json.encodeToString(vendorData)
-//        dataStore.edit { preferences ->
-//            preferences[VENDOR_DATA_KEY] = jsonString
-//        }
-//    }
+    override suspend fun saveVendorData(vendorData : VendorData) {
+        val jsonString = Json.encodeToString(vendorData)
+        dataStore.edit { preferences ->
+            preferences[VENDOR_DATA_KEY] = jsonString
+        }
+    }
 
     override suspend fun saveTimeStamp(timestamp: String) {
         dataStore.edit {
@@ -84,7 +83,7 @@ class UserPrefImpl (private val dataStore: DataStore<Preferences>) : UserPref {
 
     override suspend fun saveUserRole(role: String) {
         dataStore.edit {
-            it[USER_ROLE_KEY] = role
+            it[UserPreferences.USER_ROLE_KEY] = role
         }
     }
 }
