@@ -8,7 +8,9 @@ import androidx.navigation.compose.rememberNavController
 import com.aircash.courtreserve.ui.theme.CourtReserveTheme
 import com.aircash.courtreserve.viewmodels.navigation.NavGraph
 import com.aircash.courtreserve.viewmodels.navigation.Screens
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

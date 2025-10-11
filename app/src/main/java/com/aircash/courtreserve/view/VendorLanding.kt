@@ -1,6 +1,7 @@
 package com.aircash.courtreserve.view
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -192,6 +193,12 @@ fun VendorLanding(
                         ) {
                             Text("Login", fontFamily = Lexend)
                         }
+
+                        AddHeight(30.dp)
+
+                        Text("Not a vendor? Signup", modifier = Modifier.clickable{
+                            navController.navigate(Screens.VendorSignup.route)
+                        }, color = primary, fontFamily = Lexend)
                     }
                     else {
                         Box(

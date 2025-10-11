@@ -2,7 +2,6 @@ package com.aircash.courtreserve.view
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,18 +17,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.navigation.NavController
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -44,7 +40,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.aircash.courtreserve.models.model.LoginRequest
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.aircash.courtreserve.models.model.VendorRegisterRequest
 import com.aircash.courtreserve.models.network.NetworkResponse
 import com.aircash.courtreserve.ui.theme.IBMPlex
 import com.aircash.courtreserve.ui.theme.Lexend
@@ -52,18 +51,16 @@ import com.aircash.courtreserve.ui.theme.buttonDark
 import com.aircash.courtreserve.ui.theme.buttonLight
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.viewmodels.navigation.Screens
-import com.aircash.courtreserve.viewmodels.viewmodel.UserAuthViewModel
-import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
+import com.aircash.courtreserve.viewmodels.viewmodel.VendorAuthViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun UserLanding(
+fun VendorSignup(
     navController: NavController,
-    userTokenViewModel: UserTokenViewModel = hiltViewModel(),
-    userAuthViewModel: UserAuthViewModel = hiltViewModel()
+    vendorAuthViewModel: VendorAuthViewModel = hiltViewModel()
 ) {
     Surface {
-
+        val (name, setName) = remember { mutableStateOf("") }
         val (email, setEmail) = remember { mutableStateOf("") }
         val (password, setPassword) = remember { mutableStateOf("") }
         val color = if (isSystemInDarkTheme()) buttonDark else buttonLight
@@ -71,7 +68,7 @@ fun UserLanding(
         val context = LocalContext.current
         val icon = if (passwordVisibility) Icons.Default.RemoveRedEye else Icons.Default.Block
         val keyboardController = LocalSoftwareKeyboardController.current
-        val loginResult = userAuthViewModel.loginResult.collectAsState()
+        val registerResult = vendorAuthViewModel.registerResult.collectAsState()
         var requestreceived by remember { mutableStateOf(false) }
         var isLoading by remember { mutableStateOf(false) }
 
@@ -96,14 +93,14 @@ fun UserLanding(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        Icons.Default.SportsTennis,
+                        Icons.Default.School,
                         contentDescription = null,
-                        modifier = Modifier.size(25.dp)
+                        modifier = Modifier.size(35.dp)
                     )
 
                     AddWidth(10.dp)
 
-                    Text("Court Reserve", fontFamily = IBMPlex, fontSize = 25.sp)
+                    Text("Court Reserve", fontFamily = IBMPlex, fontSize = 35.sp)
                 }
 
                 Column (
@@ -130,6 +127,25 @@ fun UserLanding(
                         label = "ali@uni.com",
                         value = email,
                         onValueChange = setEmail,
+                        color = color
+                    )
+
+                    AddHeight(20.dp)
+
+                    Row (
+                        modifier = Modifier.fillMaxWidth(fraction = 0.9f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Text("Your name", fontFamily = Lexend)
+                    }
+
+                    AddHeight(20.dp)
+
+                    Input(
+                        label = "name",
+                        value = name,
+                        onValueChange = setName,
                         color = color
                     )
 
@@ -171,20 +187,28 @@ fun UserLanding(
                     if (!isLoading) {
                         Button(
                             modifier = Modifier.fillMaxWidth(fraction = 0.9f).height(50.dp),
-                            shape = RoundedCornerShape(25.dp),
+                            shape = RoundedCornerShape(20.dp),
                             onClick = {
                                 if (email.isNotEmpty() && password.isNotEmpty()) {
                                     keyboardController?.hide()
                                     isLoading = true
                                     requestreceived = true
-                                    val userLoginRequest = LoginRequest(email = email, password = password)
-                                    userAuthViewModel.userLogin(userLoginRequest)
+                                    val vendorRegisterRequest =
+                                        VendorRegisterRequest(
+                                            email = email,
+                                            password = password,
+                                            name = name
+                                        )
+                                    vendorAuthViewModel.vendorRegister(vendorRegisterRequest)
                                 }
                                 else if (email.isEmpty()) {
                                     Toast.makeText(context, "Enter Email", Toast.LENGTH_SHORT).show()
                                 }
                                 else if (password.isEmpty()) {
                                     Toast.makeText(context, "Enter password", Toast.LENGTH_SHORT).show()
+                                }
+                                else if (name.isEmpty()) {
+                                    Toast.makeText(context, "Enter name", Toast.LENGTH_SHORT).show()
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(
@@ -198,7 +222,7 @@ fun UserLanding(
                         AddHeight(30.dp)
 
                         Text("Not a user? Signup", modifier = Modifier.clickable{
-                            navController.navigate(Screens.UserSignup.route)
+
                         }, color = primary, fontFamily = Lexend)
                     }
                     else {
@@ -210,8 +234,8 @@ fun UserLanding(
                         }
                     }
 
-                    if (email.isNotEmpty() && password.isNotEmpty() && requestreceived) {
-                        when (val result = loginResult.value) {
+                    if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty() && requestreceived) {
+                        when (registerResult.value) {
                             is NetworkResponse.Failure -> {
                                 isLoading = false
                                 Toast.makeText(context, "Incorrect Credentials", Toast.LENGTH_LONG).show()
@@ -222,13 +246,9 @@ fun UserLanding(
                             is NetworkResponse.Success -> {
                                 isLoading = false
                                 LaunchedEffect(Unit) {
-                                    userTokenViewModel.saveUserData(
-                                        userData = result.data.userData,
-                                        timeStamp = System.currentTimeMillis().toString(),
-                                    )
-                                    Toast.makeText(context, "Login Successful", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Register Successful", Toast.LENGTH_SHORT).show()
                                     delay(2000)
-                                    navController.navigate(route = Screens.UserHome.route)
+                                    navController.navigate(route = Screens.VendorLanding.route)
                                 }
                             }
                             null -> {}
