@@ -2,6 +2,9 @@ package com.aircash.courtreserve.models.modules
 
 import android.content.Context
 import com.aircash.courtreserve.R
+import com.aircash.courtreserve.models.interfaces.AddBookingAPI
+import com.aircash.courtreserve.models.interfaces.AddCourtAPI
+import com.aircash.courtreserve.models.interfaces.AddReviewAPI
 import com.aircash.courtreserve.models.interfaces.UserLoginAPI
 import com.aircash.courtreserve.models.interfaces.UserRegistrationAPI
 import com.aircash.courtreserve.models.interfaces.VendorLoginAPI
@@ -57,5 +60,23 @@ object NetworkModule {
     @Singleton
     fun provideVendorRegisterAPI(retrofit: Retrofit) : VendorRegistrationAPI {
         return retrofit.create(VendorRegistrationAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddBookingAPI(retrofit: Retrofit) : AddBookingAPI {
+        return retrofit.create(AddBookingAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddCourtAPI(retrofit: Retrofit) : AddCourtAPI {
+        return retrofit.create(AddCourtAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddReviewAPI(retrofit: Retrofit) : AddReviewAPI {
+        return retrofit.create(AddReviewAPI::class.java)
     }
 }
