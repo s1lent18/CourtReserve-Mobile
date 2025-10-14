@@ -25,11 +25,11 @@ class BookingViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    fun createBooking(request: CreateBookingRequest) {
+    fun createBooking(token: String, request: CreateBookingRequest) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = addBookingAPI.createBooking(request)
+                val response = addBookingAPI.createBooking(token,request)
                 if (response.isSuccessful) {
                     _addBookingResult.value = response.body()
                     _errorMessage.value = null
@@ -45,6 +45,4 @@ class BookingViewModel @Inject constructor(
             }
         }
     }
-
-
 }

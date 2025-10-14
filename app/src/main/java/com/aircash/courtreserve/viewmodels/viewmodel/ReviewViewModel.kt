@@ -25,11 +25,11 @@ class ReviewViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    fun addReview(request : AddReviewRequest) {
+    fun addReview(token: String, request : AddReviewRequest) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = addReviewAPI.createReview(request)
+                val response = addReviewAPI.createReview(token, request)
                 if (response.isSuccessful) {
                     _addReviewResult.value = response.body()
                     _errorMessage.value = null
