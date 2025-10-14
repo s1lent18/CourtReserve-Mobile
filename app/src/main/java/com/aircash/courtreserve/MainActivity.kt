@@ -21,7 +21,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             CourtReserveTheme {
                 val navController = rememberNavController()
-
                 NavGraph(
                     navController = navController,
                     startDestination = startDestination,
