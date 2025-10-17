@@ -4,13 +4,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.aircash.courtreserve.models.modules.UserPreferences
 import com.aircash.courtreserve.view.Start
+import com.aircash.courtreserve.view.UserHome
 import com.aircash.courtreserve.view.UserLanding
 import com.aircash.courtreserve.view.UserSignup
+import com.aircash.courtreserve.view.UserSinglePage
+import com.aircash.courtreserve.view.VendorHome
 import com.aircash.courtreserve.view.VendorLanding
 import com.aircash.courtreserve.view.VendorSignup
 import kotlinx.coroutines.launch
@@ -64,6 +69,34 @@ fun NavGraph(
             route = Screens.VendorSignup.route
         ) {
             VendorSignup(navController = navController)
+        }
+
+        this.composable(
+            route = Screens.VendorHome.route
+        ) {
+            VendorHome()
+        }
+
+        this.composable(
+            route = Screens.UserHome.route
+        ) {
+            UserHome(navController = navController)
+        }
+
+        this.composable(
+            route = Screens.UserSinglePage.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: -1
+
+            if (id != -1) {
+                UserSinglePage(id = id)
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.aircash.courtreserve.view
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.RemoveRedEye
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -87,11 +87,14 @@ fun UserLanding(
                 val (title, loginField) = createRefs()
 
                 Row (
-                    modifier = Modifier.constrainAs(title) {
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        bottom.linkTo(loginField.top, margin = 50.dp)
-                    }.fillMaxWidth(fraction = 0.9f).height(50.dp),
+                    modifier = Modifier
+                        .constrainAs(title) {
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            bottom.linkTo(loginField.top, margin = 50.dp)
+                        }
+                        .fillMaxWidth(fraction = 0.9f)
+                        .height(50.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -170,7 +173,9 @@ fun UserLanding(
 
                     if (!isLoading) {
                         Button(
-                            modifier = Modifier.fillMaxWidth(fraction = 0.9f).height(50.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(fraction = 0.9f)
+                                .height(50.dp),
                             shape = RoundedCornerShape(25.dp),
                             onClick = {
                                 if (email.isNotEmpty() && password.isNotEmpty()) {
@@ -203,7 +208,9 @@ fun UserLanding(
                     }
                     else {
                         Box(
-                            modifier = Modifier.fillMaxWidth(fraction = 0.9f).height(50.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(fraction = 0.9f)
+                                .height(50.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
@@ -222,6 +229,7 @@ fun UserLanding(
                             is NetworkResponse.Success -> {
                                 isLoading = false
                                 LaunchedEffect(Unit) {
+                                    Log.d("UserDataCheck", "${result.data.userData}")
                                     userTokenViewModel.saveUserData(
                                         userData = result.data.userData,
                                         timeStamp = System.currentTimeMillis().toString(),

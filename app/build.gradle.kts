@@ -80,4 +80,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.animated.navigation.bar)
+
+    implementation(libs.coil.compose)
 }

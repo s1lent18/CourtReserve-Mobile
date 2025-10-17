@@ -1,5 +1,6 @@
 package com.aircash.courtreserve.viewmodels.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aircash.courtreserve.models.interfaces.UserPref
@@ -27,13 +28,13 @@ class UserTokenViewModel @Inject constructor(
 
     val userData = userPref.getUserData().stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(),
+        started = SharingStarted.Eagerly,
         initialValue = null
     )
 
     val timeStamp = userPref.getTimeStamp().stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(),
+        started = SharingStarted.Eagerly,
         initialValue = ""
     )
 
@@ -55,16 +56,10 @@ class UserTokenViewModel @Inject constructor(
         return (System.currentTimeMillis() - loginTimestamp) > sessionDurationMillis
     }
 
-    fun saveTimeStamp(timeStamp: String) {
-        viewModelScope.launch {
-            userPref.saveTimeStamp(timestamp = timeStamp)
-        }
-    }
-
-    fun saveUserData(userData: UserData) {
-        viewModelScope.launch {
-            userPref.saveUserData(userData = userData)
-        }
+    suspend fun saveUserData(userData: UserData, timeStamp: String) {
+        Log.d("UserDataViewModelCheck", "$userData")
+        userPref.saveUserData(userData = userData)
+        userPref.saveTimeStamp(timestamp = timeStamp)
     }
 
     fun logout() {
@@ -72,11 +67,6 @@ class UserTokenViewModel @Inject constructor(
             userPref.saveUserData(UserData())
             userPref.saveTimeStamp("")
         }
-    }
-
-    fun saveUserData(userData: UserData, timeStamp: String) {
-        saveUserData(userData = userData)
-        saveTimeStamp(timeStamp)
     }
 
     private fun startAutoLogoutTimer() {

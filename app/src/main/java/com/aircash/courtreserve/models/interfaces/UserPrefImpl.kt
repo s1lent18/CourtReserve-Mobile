@@ -1,5 +1,6 @@
 package com.aircash.courtreserve.models.interfaces
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -62,6 +63,7 @@ class UserPrefImpl (private val dataStore: DataStore<Preferences>) : UserPref {
     }
 
     override suspend fun saveUserData(userData: UserData) {
+        Log.d("UserDataPrefCheck", "$userData")
         val jsonString = Json.Default.encodeToString(userData)
         dataStore.edit { preferences ->
             preferences[USER_DATA_KEY] = jsonString

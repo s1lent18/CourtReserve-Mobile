@@ -3,10 +3,14 @@ package com.aircash.courtreserve.viewmodels.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aircash.courtreserve.models.interfaces.AddCourtAPI
+import com.aircash.courtreserve.models.interfaces.GetAllCourtsAPI
+import com.aircash.courtreserve.models.interfaces.GetCourtAPI
 import com.aircash.courtreserve.models.interfaces.GetPopularCourtsAPI
 import com.aircash.courtreserve.models.model.AddCourtRequest
 import com.aircash.courtreserve.models.model.AddCourtResponse
 import com.aircash.courtreserve.models.model.GetPopularCourtsResponse
+import com.aircash.courtreserve.models.model.GetVendorCourtsResponse
+import com.aircash.courtreserve.models.model.SingleCourtResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CourtViewModel @Inject constructor(
     private val addCourtAPI: AddCourtAPI,
+    private val getCourtAPI: GetCourtAPI,
+    private val getAllCourtsAPI: GetAllCourtsAPI,
     private val getPopularCourtsAPI: GetPopularCourtsAPI
 ) : ViewModel() {
 
@@ -24,6 +30,12 @@ class CourtViewModel @Inject constructor(
 
     private val _getPopularCourtsResult = MutableStateFlow<GetPopularCourtsResponse?>(null)
     val getPopularCourtsResult : StateFlow<GetPopularCourtsResponse?> = _getPopularCourtsResult
+
+    private val _getAllCourtsResult = MutableStateFlow<GetVendorCourtsResponse?>(null)
+    val getAllCourtsResult : StateFlow<GetVendorCourtsResponse?> = _getAllCourtsResult
+
+    private val _getCourtResult = MutableStateFlow<SingleCourtResponse?>(null)
+    val getCourtResult : StateFlow<SingleCourtResponse?> = _getCourtResult
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
@@ -35,7 +47,7 @@ class CourtViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = addCourtAPI.addCourt(vendorId = vendorId, token, request)
+                val response = addCourtAPI.addCourt(vendorId = vendorId, "Bearer $token", request)
                 if (response.isSuccessful) {
                     _addCourtResult.value = response.body()
                     _errorMessage.value = null
@@ -56,7 +68,7 @@ class CourtViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = getPopularCourtsAPI.getPopularCourts(token = token, location = location)
+                val response = getPopularCourtsAPI.getPopularCourts(token = "Bearer $token", location = location)
                 if (response.isSuccessful) {
                     _getPopularCourtsResult.value = response.body()
                     _errorMessage.value = null
@@ -67,6 +79,48 @@ class CourtViewModel @Inject constructor(
             } catch (e: Exception) {
                 _errorMessage.value = "Network error: ${e.localizedMessage}"
                 _getPopularCourtsResult.value = null
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun getAllCourts(token : String, id : Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = getAllCourtsAPI.getVendorCourts(id = id, token = "Bearer $token")
+                if (response.isSuccessful) {
+                    _getAllCourtsResult.value = response.body()
+                    _errorMessage.value = null
+                } else {
+                    _errorMessage.value = "Error ${response.code()}: ${response.message()}"
+                    _getAllCourtsResult.value = null
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Network error: ${e.localizedMessage}"
+                _getAllCourtsResult.value = null
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun getCourt(token : String, id : Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = getCourtAPI.getCourt(id = id, token = "Bearer $token")
+                if (response.isSuccessful) {
+                    _getCourtResult.value = response.body()
+                    _errorMessage.value = null
+                } else {
+                    _errorMessage.value = "Error ${response.code()}: ${response.message()}"
+                    _getCourtResult.value = null
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Network error: ${e.localizedMessage}"
+                _getCourtResult.value
             } finally {
                 _isLoading.value = false
             }
