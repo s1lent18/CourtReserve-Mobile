@@ -122,6 +122,8 @@ fun UserHome(
         val popularCourts = courtViewModel.getPopularCourtsResult.collectAsState().value
         val userData = userTokenViewModel.userData.collectAsState().value
         var searchQuery by remember { mutableStateOf("") }
+        val isLoading = courtViewModel.isLoading.collectAsState().value
+        val errorMessage = courtViewModel.errorMessage.collectAsState().value
 
         LaunchedEffect(userData) {
             Log.d("UserDataCheck", "$userData")
@@ -274,7 +276,7 @@ fun UserHome(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 contentPadding = PaddingValues(horizontal = 16.dp)
                             ) {
-                                if (popularCourts == null) {
+                                if (popularCourts == null && isLoading) {
                                     item {
                                         Box(
                                             modifier = Modifier
@@ -285,7 +287,23 @@ fun UserHome(
                                             CircularProgressIndicator()
                                         }
                                     }
-                                } else {
+                                } else if (popularCourts == null) {
+                                    item {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(cardWidth)
+                                                .height(rowHeight),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                "$errorMessage",
+                                                fontSize = 17.sp,
+                                                fontFamily = Lexend
+                                            )
+                                        }
+                                    }
+                                }
+                                else {
                                     items(popularCourts.courts.size) { index ->
                                         CourtInfo(
                                             court = popularCourts.courts[index],

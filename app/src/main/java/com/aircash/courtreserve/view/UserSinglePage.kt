@@ -3,6 +3,7 @@ package com.aircash.courtreserve.view
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,11 +21,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -49,6 +50,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.aircash.courtreserve.R
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
+import com.aircash.courtreserve.ui.theme.secondary
 import com.aircash.courtreserve.viewmodels.viewmodel.CourtViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
 import kotlinx.coroutines.delay
@@ -105,7 +107,7 @@ fun UserSinglePage(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                val (imageSlides, initial, firstDivider, desc, secondDivider, time) = createRefs()
+                val (imageSlides, initial, firstDivider, desc, secondDivider, time, bottomBar, thirdDivider, type) = createRefs()
 
                 if (court == null) {
                     Box(
@@ -177,7 +179,7 @@ fun UserSinglePage(
 
                     Column (
                         modifier = Modifier.constrainAs(initial) {
-                            top.linkTo(imageSlides.bottom, margin = 10.dp)
+                            top.linkTo(imageSlides.bottom, margin = 20.dp)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
                             width = Dimension.percent(0.9f)
@@ -192,7 +194,7 @@ fun UserSinglePage(
                             Text(court.name, fontFamily = Lexend, fontSize = 20.sp)
                         }
 
-                        AddHeight(5.dp)
+                        AddHeight(10.dp)
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -212,7 +214,7 @@ fun UserSinglePage(
                     Row (
                         modifier = Modifier
                             .constrainAs(firstDivider) {
-                                top.linkTo(initial.bottom, margin = 10.dp)
+                                top.linkTo(initial.bottom, margin = 15.dp)
                                 start.linkTo(parent.start)
                                 end.linkTo(parent.end)
                                 width = Dimension.percent(0.9f)
@@ -225,7 +227,7 @@ fun UserSinglePage(
 
                     Column (
                         modifier = Modifier.constrainAs(desc) {
-                            top.linkTo(firstDivider.bottom, margin = 10.dp)
+                            top.linkTo(firstDivider.bottom, margin = 15.dp)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
                             width = Dimension.percent(0.9f)
@@ -251,7 +253,7 @@ fun UserSinglePage(
                     Row (
                         modifier = Modifier
                             .constrainAs(secondDivider) {
-                                top.linkTo(desc.bottom, margin = 10.dp)
+                                top.linkTo(desc.bottom, margin = 15.dp)
                                 start.linkTo(parent.start)
                                 end.linkTo(parent.end)
                                 width = Dimension.percent(0.9f)
@@ -330,6 +332,100 @@ fun UserSinglePage(
                                 )
 
                                 Text(court.close)
+                            }
+                        }
+                    }
+
+                    Row (
+                        modifier = Modifier
+                            .constrainAs(thirdDivider) {
+                                top.linkTo(time.bottom, margin = 15.dp)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                width = Dimension.percent(0.9f)
+                            }
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = Color.Gray)
+                    }
+
+                    ElevatedCard (
+                        modifier = Modifier.constrainAs(type) {
+                            top.linkTo(thirdDivider.bottom, margin = 15.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            bottom.linkTo(bottomBar.top, margin = 15.dp)
+                            width = Dimension.percent(0.9f)
+                            height = Dimension.fillToConstraints
+                        },
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = secondary
+                        ),
+                        elevation = CardDefaults.elevatedCardElevation(
+                            defaultElevation = 20.dp
+                        )
+                    ) {
+                        Box (
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(court.type, fontSize = 20.sp, fontFamily = Lexend, color = Color.White)
+                        }
+                    }
+
+                    ElevatedCard (
+                        modifier = Modifier
+                            .constrainAs(bottomBar) {
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                bottom.linkTo(parent.bottom, margin = 30.dp)
+                                width = Dimension.percent(0.9f)
+                            }
+                            .clip(RoundedCornerShape(50.dp))
+                            .height(60.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = primary
+                        ),
+                        elevation = CardDefaults.elevatedCardElevation(20.dp)
+                    ) {
+                        Row (
+                            modifier = Modifier.fillMaxSize()
+                                .padding(start = 15.dp, end = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column (
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(0.5f),
+                                horizontalAlignment = Alignment.Start,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text("Rs.${court.price.toInt()}/Hr", fontSize = 20.sp, fontFamily = Lexend)
+                            }
+
+                            Column (
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(0.5f),
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box (
+                                    modifier = Modifier
+                                        .clickable {
+
+                                        }
+                                        .clip(RoundedCornerShape(50.dp))
+                                        .background(Color.White)
+                                        .fillMaxHeight(fraction = 0.75f)
+                                        .fillMaxWidth(fraction = 0.6f),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("Book Now", fontFamily = Lexend, fontSize = 12.sp, color = primary)
+                                }
                             }
                         }
                     }

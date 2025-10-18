@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -24,7 +25,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.aircash.courtreserve.models.modules.UserPreferences
 import com.aircash.courtreserve.ui.theme.CourtReserveTheme
 import com.aircash.courtreserve.ui.theme.Lexend
-import com.aircash.courtreserve.ui.theme.secondary
 import com.aircash.courtreserve.viewmodels.navigation.Screens
 import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.VendorTokenViewModel
@@ -120,7 +120,7 @@ class SplashScreen : ComponentActivity() {
             Text(
                 text = displayedText,
                 fontSize = 45.sp,
-                color = secondary,
+                color = Color.White,
                 fontFamily = Lexend,
                 fontWeight = FontWeight.Bold
             )
