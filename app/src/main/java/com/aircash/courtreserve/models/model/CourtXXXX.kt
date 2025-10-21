@@ -1,7 +1,8 @@
 package com.aircash.courtreserve.models.model
 
 data class CourtXXXX(
-    val avgRating: Any,
+    val avgRating: Double,
+    val bookedTimes: List<BookedTime>,
     val bookingCount: Int,
     val close: String,
     val description: String,

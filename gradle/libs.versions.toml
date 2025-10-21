@@ -19,8 +19,10 @@ material3 = "1.4.0-alpha15"
 navigationRuntimeAndroid = "2.9.0"
 retrofit = "2.11.0"
 animatedNavigationBar = "1.0.0"
+datetime = "0.8.1-rc"
 
 [libraries]
+datetime = { module = "io.github.vanpra.compose-material-dialogs:datetime", version.ref = "datetime" }
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }

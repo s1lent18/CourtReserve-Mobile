@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -21,19 +22,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,20 +60,29 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.aircash.courtreserve.R
+import com.aircash.courtreserve.models.model.BookingDisplay
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.ui.theme.secondary
+import com.aircash.courtreserve.viewmodels.viewmodel.BookingViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.CourtViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
+import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserSinglePage(
     id : Int,
-    userTokenViewModel : UserTokenViewModel = hiltViewModel(),
-    courtViewModel : CourtViewModel = hiltViewModel()
+    courtViewModel : CourtViewModel = hiltViewModel(),
+    bookingViewModel: BookingViewModel = hiltViewModel(),
+    userTokenViewModel : UserTokenViewModel = hiltViewModel()
 ) {
     Surface {
         val coroutineScope = rememberCoroutineScope()
@@ -76,6 +97,35 @@ fun UserSinglePage(
         )
         val pageCount = /*if(court?.otherImages?.isNotEmpty() == true) venue.otherImages.size else 1 */ images.size
         val pagerState = rememberPagerState(pageCount = { pageCount })
+        val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        var isSheetOpen by rememberSaveable { mutableStateOf(false) }
+        val addBookingResult = bookingViewModel.addBookingResult.collectAsState().value
+        val dateDialogState = rememberMaterialDialogState()
+        val timeDialogState = rememberMaterialDialogState()
+
+        val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+        val initialPickedTime = remember {
+            try {
+                LocalTime.parse(court?.open, DateTimeFormatter.ofPattern("hh:mm a"))
+            } catch (e: Exception) {
+                LocalTime.NOON
+            }
+        }
+
+        var initialPickedDate by remember { mutableStateOf(LocalDate.now()) }
+        var pickedTime by remember { mutableStateOf(initialPickedTime) }
+        var pickedDate by remember { mutableStateOf(initialPickedDate) }
+
+        val formattedTime by remember {
+            derivedStateOf { DateTimeFormatter.ofPattern("hh:mm a").format(pickedTime) }
+        }
+
+        val formattedDate by remember {
+            derivedStateOf { DateTimeFormatter.ofPattern("dd MMM yyyy").format(pickedDate) }
+        }
 
         if (court != null) {
             LaunchedEffect(/*venue.otherImages.isNotEmpty()*/ true) {
@@ -117,6 +167,17 @@ fun UserSinglePage(
                         CircularProgressIndicator()
                     }
                 } else {
+
+                    val displayList = court.bookedTimes.map { booking ->
+                        val start = LocalDateTime.parse(booking.startTime, formatter)
+                        val end = LocalDateTime.parse(booking.endTime, formatter)
+                        BookingDisplay(
+                            date = start.format(dateFormatter),
+                            start = start.format(timeFormatter),
+                            end = end.format(timeFormatter)
+                        )
+                    }
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -416,7 +477,7 @@ fun UserSinglePage(
                                 Box (
                                     modifier = Modifier
                                         .clickable {
-
+                                            isSheetOpen = true
                                         }
                                         .clip(RoundedCornerShape(50.dp))
                                         .background(Color.White)
@@ -427,6 +488,55 @@ fun UserSinglePage(
                                     Text("Book Now", fontFamily = Lexend, fontSize = 12.sp, color = primary)
                                 }
                             }
+                        }
+                    }
+                }
+            }
+
+            if (isSheetOpen) {
+                ModalBottomSheet(
+                    sheetState = bottomSheetState,
+                    onDismissRequest = { isSheetOpen = false },
+                    containerColor = secondary
+                ) {
+                    Column (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        if (addBookingResult == null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(fraction = 0.85f),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Funca(
+                                    text = formattedDate,
+                                    icon = Icons.Default.CalendarMonth,
+                                    modifier = Modifier
+                                        .fillMaxWidth(fraction = 0.8f)
+                                        .height(50.dp)
+                                )
+                                Box (
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(primary)
+                                ) {
+                                    IconButton(
+                                        onClick = { dateDialogState.show() }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.CalendarMonth,
+                                            contentDescription = null,
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+
                         }
                     }
                 }
