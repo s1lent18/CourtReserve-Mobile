@@ -1,8 +1,10 @@
 package com.aircash.courtreserve.view
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -22,8 +26,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,6 +42,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,9 +61,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -67,14 +78,72 @@ import com.aircash.courtreserve.ui.theme.secondary
 import com.aircash.courtreserve.viewmodels.viewmodel.BookingViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.CourtViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
+import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.datetime.date.DatePickerDefaults
+import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+
+fun getAvailableIntervals(open: LocalTime, close: LocalTime): List<Pair<LocalTime, LocalTime>> {
+    val intervals = mutableListOf<Pair<LocalTime, LocalTime>>()
+
+    // Calculate total duration between open and close, accounting for overnight close times
+    var totalMinutes = if (close.isBefore(open)) {
+        Duration.between(close.plusHours(24), open).toMinutes()
+    } else {
+        Duration.between(open, close).toMinutes()
+    }
+
+    totalMinutes = 1440 - totalMinutes
+
+    Log.d("Time Slots Minutes", "$totalMinutes")
+
+    var startMinutes = 0L
+
+    while (startMinutes + 60 <= totalMinutes) {
+        val startTime = open.plusMinutes(startMinutes)
+        val endTime = open.plusMinutes(startMinutes + 60)
+
+        // Wrap around after midnight
+        val normalizedStart = if (startTime.hour >= 24) startTime.minusHours(24) else startTime
+        val normalizedEnd = if (endTime.hour >= 24) endTime.minusHours(24) else endTime
+
+        intervals.add(normalizedStart to normalizedEnd)
+
+        // 1 hour slot + 5 min gap
+        startMinutes += 65
+    }
+
+    Log.d("Time Slots Intervals", "$intervals")
+    return intervals
+}
+
+@Composable
+fun TimeSlotItem(slot: Pair<LocalTime, LocalTime>, isSelected: Boolean, onClick: () -> Unit) {
+    val bgColor = if (isSelected) Color(0xFF4CAF50) else Color.Transparent
+    val borderColor = if (isSelected) Color.White else Color.Gray
+
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { onClick() }
+            .border(1.dp, borderColor)
+            .background(bgColor)
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text("${slot.first} - ${slot.second}", color = Color.White)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,26 +171,15 @@ fun UserSinglePage(
         val addBookingResult = bookingViewModel.addBookingResult.collectAsState().value
         val dateDialogState = rememberMaterialDialogState()
         val timeDialogState = rememberMaterialDialogState()
-
+        val (advance, setAdvance) = remember { mutableStateOf("") }
         val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-
-        val initialPickedTime = remember {
-            try {
-                LocalTime.parse(court?.open, DateTimeFormatter.ofPattern("hh:mm a"))
-            } catch (e: Exception) {
-                LocalTime.NOON
-            }
-        }
+        var selectedSlots by remember { mutableStateOf(listOf<Pair<LocalTime, LocalTime>>()) }
+        var allSlots by remember { mutableStateOf<List<Pair<LocalTime, LocalTime>>>(emptyList()) }
 
         var initialPickedDate by remember { mutableStateOf(LocalDate.now()) }
-        var pickedTime by remember { mutableStateOf(initialPickedTime) }
         var pickedDate by remember { mutableStateOf(initialPickedDate) }
-
-        val formattedTime by remember {
-            derivedStateOf { DateTimeFormatter.ofPattern("hh:mm a").format(pickedTime) }
-        }
 
         val formattedDate by remember {
             derivedStateOf { DateTimeFormatter.ofPattern("dd MMM yyyy").format(pickedDate) }
@@ -140,6 +198,52 @@ fun UserSinglePage(
                         )
                     }
                 }
+            }
+        }
+
+        val displayList = court?.bookedTimes?.map { booking ->
+            val start = LocalDateTime.parse(booking.startTime, formatter)
+            val end = LocalDateTime.parse(booking.endTime, formatter)
+            BookingDisplay(
+                date = start.format(dateFormatter),
+                start = start.format(timeFormatter),
+                end = end.format(timeFormatter)
+            )
+        }
+
+        Log.d("Time Slots Display List: ", "$displayList")
+
+        val blockedBookings = displayList?.map {
+            Triple(
+                LocalDate.parse(it.date),
+                LocalTime.parse(it.start),
+                LocalTime.parse(it.end)
+            )
+        }
+
+        Log.d("Time Slots Blocked Bookings: ", "$blockedBookings")
+
+        LaunchedEffect(court, pickedDate, blockedBookings) {
+            if (court != null) {
+                val openingTime = LocalTime.parse(court.open)
+                val closingTime = LocalTime.parse(court.close)
+
+                Log.d("Time Slots Inside Launched", "$openingTime $closingTime")
+
+                val totalSlots = getAvailableIntervals(openingTime, closingTime)
+
+                Log.d("Time Slots total Slots", "$totalSlots")
+
+                // 2. Filter out the slots that are already booked for the selected date
+                val availableSlots = totalSlots.filter { slot ->
+                    val isBooked = blockedBookings?.any { (bookingDate, bookingStart, bookingEnd) ->
+                        pickedDate == bookingDate && slot.first.isBefore(bookingEnd) && slot.second.isAfter(bookingStart)
+                    } ?: false
+                    !isBooked // Keep the slot if it's not booked
+                }
+
+                allSlots = availableSlots
+                Log.d("Time Slots All Slots:", "$allSlots") // You can verify the result here
             }
         }
 
@@ -167,17 +271,6 @@ fun UserSinglePage(
                         CircularProgressIndicator()
                     }
                 } else {
-
-                    val displayList = court.bookedTimes.map { booking ->
-                        val start = LocalDateTime.parse(booking.startTime, formatter)
-                        val end = LocalDateTime.parse(booking.endTime, formatter)
-                        BookingDisplay(
-                            date = start.format(dateFormatter),
-                            start = start.format(timeFormatter),
-                            end = end.format(timeFormatter)
-                        )
-                    }
-
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -452,7 +545,8 @@ fun UserSinglePage(
                         elevation = CardDefaults.elevatedCardElevation(20.dp)
                     ) {
                         Row (
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier
+                                .fillMaxSize()
                                 .padding(start = 15.dp, end = 10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -493,7 +587,7 @@ fun UserSinglePage(
                 }
             }
 
-            if (isSheetOpen) {
+            if (isSheetOpen && court != null) {
                 ModalBottomSheet(
                     sheetState = bottomSheetState,
                     onDismissRequest = { isSheetOpen = false },
@@ -516,7 +610,7 @@ fun UserSinglePage(
                                     text = formattedDate,
                                     icon = Icons.Default.CalendarMonth,
                                     modifier = Modifier
-                                        .fillMaxWidth(fraction = 0.8f)
+                                        .fillMaxWidth(fraction = 0.65f)
                                         .height(50.dp)
                                 )
                                 Box (
@@ -534,9 +628,175 @@ fun UserSinglePage(
                                         )
                                     }
                                 }
+                                Box (
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(primary)
+                                ) {
+                                    IconButton(
+                                        onClick = { timeDialogState.show() }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.AccessTime,
+                                            contentDescription = null,
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
                             }
-                        } else {
 
+                            AddHeight(20.dp)
+
+                            TextField(
+                                label = { Text("Advance", fontFamily = Lexend) },
+                                value = advance,
+                                onValueChange = setAdvance,
+                                modifier = Modifier
+                                    .fillMaxWidth(fraction = 0.85f)
+                                    .height(50.dp),
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.AttachMoney,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = primary,
+                                    unfocusedContainerColor = primary,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                    disabledLabelColor = Color.White,
+                                    unfocusedLabelColor = Color.White,
+                                    focusedLabelColor = Color.White,
+                                    disabledTextColor = Color.White,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                textStyle = TextStyle(
+                                    color = Color.White,
+                                    fontSize = 15.sp
+                                )
+                            )
+
+                            AddHeight(20.dp)
+                            Button(
+                                onClick = {  },
+                                modifier = Modifier
+                                    .fillMaxWidth(fraction = 0.85f)
+                                    .height(50.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = primary,
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(5.dp)
+                            ) {
+                                Text("Confirm Booking")
+                            }
+                            AddHeight(20.dp)
+
+                            MaterialDialog (
+                                dialogState = dateDialogState,
+                                properties = DialogProperties(
+
+                                ),
+                                backgroundColor = primary,
+                                buttons = {
+                                    positiveButton(
+                                        "Ok",
+                                        textStyle = TextStyle(color = Color.White)
+                                    )
+                                }
+                            ) {
+                                datepicker(
+                                    initialDate = LocalDate.now(),
+                                    title = "Pick a Date",
+                                    allowedDateValidator = { date ->
+                                        date >= LocalDate.now() &&
+                                                (blockedBookings?.none { it.first == date } ?: true)
+                                    },
+                                    colors = DatePickerDefaults.colors(
+                                        headerBackgroundColor = primary,
+                                        headerTextColor = Color.White,
+                                        calendarHeaderTextColor = Color.White,
+                                        dateActiveBackgroundColor = primary,
+                                        dateActiveTextColor = Color.White,
+                                        dateInactiveTextColor = Color.White
+                                    )
+                                ) {
+                                    pickedDate = it
+                                }
+                            }
+
+                            MaterialDialog (
+                                dialogState = timeDialogState,
+                                properties = DialogProperties(
+
+                                ),
+                                backgroundColor = primary,
+                                buttons = {
+                                    positiveButton(
+                                        "Ok",
+                                        textStyle = TextStyle(color = Color.White)
+                                    )
+                                }
+                            ) {
+                                val blockedTimesForDate = blockedBookings?.filter { it.first == pickedDate }
+                                Log.d("all Slots", "$allSlots")
+                                val availableSlots = allSlots.filter { slot ->
+                                    // Convert slot to LocalDateTime for comparison
+                                    val slotStartDateTime = LocalDateTime.of(pickedDate, slot.first)
+                                    val slotEndDateTime = if (slot.second.isBefore(slot.first)) {
+                                        // Slot passes midnight → next day
+                                        LocalDateTime.of(pickedDate.plusDays(1), slot.second)
+                                    } else {
+                                        LocalDateTime.of(pickedDate, slot.second)
+                                    }
+
+                                    val isBooked = blockedBookings?.any { (bookingDate, bookingStart, bookingEnd) ->
+                                        val bookingStartDateTime = LocalDateTime.of(bookingDate, bookingStart)
+                                        val bookingEndDateTime = if (bookingEnd.isBefore(bookingStart)) {
+                                            LocalDateTime.of(bookingDate.plusDays(1), bookingEnd)
+                                        } else {
+                                            LocalDateTime.of(bookingDate, bookingEnd)
+                                        }
+
+                                        // Overlap check
+                                        (slotStartDateTime < bookingEndDateTime && slotEndDateTime > bookingStartDateTime)
+                                    } ?: false
+
+                                    !isBooked
+                                }
+
+                                Log.d("Time Slots All Slots: ", "$allSlots")
+
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        "Select Time Slots",
+                                        color = Color.White,
+                                    )
+                                    AddHeight(8.dp)
+
+                                    LazyColumn {
+                                        items(availableSlots) { slot ->
+                                            val isSelected = selectedSlots.contains(slot)
+                                            TimeSlotItem(
+                                                slot = slot,
+                                                isSelected = isSelected,
+                                                onClick = {
+                                                    selectedSlots = if (isSelected) {
+                                                        selectedSlots - slot
+                                                    } else {
+                                                        selectedSlots + slot
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

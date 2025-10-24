@@ -18,6 +18,7 @@ import com.aircash.courtreserve.view.UserSinglePage
 import com.aircash.courtreserve.view.VendorHome
 import com.aircash.courtreserve.view.VendorLanding
 import com.aircash.courtreserve.view.VendorSignup
+import com.aircash.courtreserve.view.VendorSinglePage
 import kotlinx.coroutines.launch
 
 @Composable
@@ -96,6 +97,22 @@ fun NavGraph(
 
             if (id != -1) {
                 UserSinglePage(id = id)
+            }
+        }
+
+        this.composable(
+            route = Screens.VendorSinglePage.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: -1
+
+            if (id != -1) {
+                VendorSinglePage(id = id)
             }
         }
     }
