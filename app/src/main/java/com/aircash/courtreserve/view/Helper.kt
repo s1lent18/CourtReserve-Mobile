@@ -1,6 +1,11 @@
 package com.aircash.courtreserve.view
 
 import android.annotation.SuppressLint
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,6 +24,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
@@ -29,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
+import java.time.Duration
+import java.time.LocalTime
 
 @Composable
 fun AddWidth(space: Dp) {
@@ -113,5 +121,57 @@ fun Funca(
             }
             Text(text)
         }
+    }
+}
+
+fun getAvailableIntervals(open: LocalTime, close: LocalTime): List<Pair<LocalTime, LocalTime>> {
+    val intervals = mutableListOf<Pair<LocalTime, LocalTime>>()
+
+
+    var totalMinutes = if (close.isBefore(open)) {
+        Duration.between(close.plusHours(24), open).toMinutes()
+    } else {
+        Duration.between(open, close).toMinutes()
+    }
+
+    totalMinutes = 1440 - totalMinutes
+
+    Log.d("Time Slots Minutes", "$totalMinutes")
+
+    var startMinutes = 0L
+
+    while (startMinutes + 60 <= totalMinutes) {
+        val startTime = open.plusMinutes(startMinutes)
+        val endTime = open.plusMinutes(startMinutes + 60)
+
+        val normalizedStart = if (startTime.hour >= 24) startTime.minusHours(24) else startTime
+        val normalizedEnd = if (endTime.hour >= 24) endTime.minusHours(24) else endTime
+
+        intervals.add(normalizedStart to normalizedEnd)
+
+        startMinutes += 65
+    }
+
+    Log.d("Time Slots Intervals", "$intervals")
+    return intervals
+}
+
+@Composable
+fun TimeSlotItem(slot: Pair<LocalTime, LocalTime>, isSelected: Boolean, onClick: () -> Unit) {
+    val bgColor = if (isSelected) Color(0xFF4CAF50) else Color.Transparent
+    val borderColor = if (isSelected) Color.White else Color.Gray
+
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable { onClick() }
+            .border(1.dp, borderColor)
+            .background(bgColor)
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text("${slot.first} - ${slot.second}", color = Color.White)
     }
 }

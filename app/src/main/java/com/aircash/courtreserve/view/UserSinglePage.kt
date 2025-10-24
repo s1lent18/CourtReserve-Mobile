@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -72,6 +71,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.aircash.courtreserve.R
 import com.aircash.courtreserve.models.model.BookingDisplay
+import com.aircash.courtreserve.models.model.CreateBookingRequest
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.ui.theme.secondary
@@ -85,65 +85,10 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-
-fun getAvailableIntervals(open: LocalTime, close: LocalTime): List<Pair<LocalTime, LocalTime>> {
-    val intervals = mutableListOf<Pair<LocalTime, LocalTime>>()
-
-    // Calculate total duration between open and close, accounting for overnight close times
-    var totalMinutes = if (close.isBefore(open)) {
-        Duration.between(close.plusHours(24), open).toMinutes()
-    } else {
-        Duration.between(open, close).toMinutes()
-    }
-
-    totalMinutes = 1440 - totalMinutes
-
-    Log.d("Time Slots Minutes", "$totalMinutes")
-
-    var startMinutes = 0L
-
-    while (startMinutes + 60 <= totalMinutes) {
-        val startTime = open.plusMinutes(startMinutes)
-        val endTime = open.plusMinutes(startMinutes + 60)
-
-        // Wrap around after midnight
-        val normalizedStart = if (startTime.hour >= 24) startTime.minusHours(24) else startTime
-        val normalizedEnd = if (endTime.hour >= 24) endTime.minusHours(24) else endTime
-
-        intervals.add(normalizedStart to normalizedEnd)
-
-        // 1 hour slot + 5 min gap
-        startMinutes += 65
-    }
-
-    Log.d("Time Slots Intervals", "$intervals")
-    return intervals
-}
-
-@Composable
-fun TimeSlotItem(slot: Pair<LocalTime, LocalTime>, isSelected: Boolean, onClick: () -> Unit) {
-    val bgColor = if (isSelected) Color(0xFF4CAF50) else Color.Transparent
-    val borderColor = if (isSelected) Color.White else Color.Gray
-
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onClick() }
-            .border(1.dp, borderColor)
-            .background(bgColor)
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text("${slot.first} - ${slot.second}", color = Color.White)
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -177,7 +122,7 @@ fun UserSinglePage(
         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
         var selectedSlots by remember { mutableStateOf(listOf<Pair<LocalTime, LocalTime>>()) }
         var allSlots by remember { mutableStateOf<List<Pair<LocalTime, LocalTime>>>(emptyList()) }
-
+        var clicked by remember { mutableStateOf(false) }
         var initialPickedDate by remember { mutableStateOf(LocalDate.now()) }
         var pickedDate by remember { mutableStateOf(initialPickedDate) }
 
@@ -222,6 +167,33 @@ fun UserSinglePage(
         }
 
         Log.d("Time Slots Blocked Bookings: ", "$blockedBookings")
+
+        LaunchedEffect(clicked) {
+            if (clicked && court != null && userData != null && selectedSlots.isNotEmpty()) {
+                val totalPrice = court.price.toInt() * selectedSlots.size
+
+                val startTime = selectedSlots.first().first
+                val endTime = selectedSlots.last().second
+
+                val endDate = if (endTime.isBefore(startTime)) pickedDate.plusDays(1) else pickedDate
+
+                val createBookingResult = CreateBookingRequest(
+                    advance = advance.toIntOrNull() ?: 0,
+                    price = totalPrice,
+                    facilityId = court.id,
+                    userId = userData.id,
+                    startTime = "$pickedDate $startTime",
+                    endTime = "$endDate $endTime"
+                )
+
+                bookingViewModel.createBooking(
+                    token = "Bearer ${userData.token}",
+                    request = createBookingResult
+                )
+
+                clicked = false
+            }
+        }
 
         LaunchedEffect(court, pickedDate, blockedBookings) {
             if (court != null) {
@@ -683,7 +655,7 @@ fun UserSinglePage(
 
                             AddHeight(20.dp)
                             Button(
-                                onClick = {  },
+                                onClick = { clicked = true },
                                 modifier = Modifier
                                     .fillMaxWidth(fraction = 0.85f)
                                     .height(50.dp),
@@ -743,13 +715,9 @@ fun UserSinglePage(
                                     )
                                 }
                             ) {
-                                val blockedTimesForDate = blockedBookings?.filter { it.first == pickedDate }
-                                Log.d("all Slots", "$allSlots")
                                 val availableSlots = allSlots.filter { slot ->
-                                    // Convert slot to LocalDateTime for comparison
                                     val slotStartDateTime = LocalDateTime.of(pickedDate, slot.first)
                                     val slotEndDateTime = if (slot.second.isBefore(slot.first)) {
-                                        // Slot passes midnight → next day
                                         LocalDateTime.of(pickedDate.plusDays(1), slot.second)
                                     } else {
                                         LocalDateTime.of(pickedDate, slot.second)
@@ -763,7 +731,6 @@ fun UserSinglePage(
                                             LocalDateTime.of(bookingDate, bookingEnd)
                                         }
 
-                                        // Overlap check
                                         (slotStartDateTime < bookingEndDateTime && slotEndDateTime > bookingStartDateTime)
                                     } ?: false
 
