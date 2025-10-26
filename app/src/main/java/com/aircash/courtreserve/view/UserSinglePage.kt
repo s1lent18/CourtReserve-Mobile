@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -206,16 +207,15 @@ fun UserSinglePage(
 
                 Log.d("Time Slots total Slots", "$totalSlots")
 
-                // 2. Filter out the slots that are already booked for the selected date
                 val availableSlots = totalSlots.filter { slot ->
                     val isBooked = blockedBookings?.any { (bookingDate, bookingStart, bookingEnd) ->
                         pickedDate == bookingDate && slot.first.isBefore(bookingEnd) && slot.second.isAfter(bookingStart)
                     } ?: false
-                    !isBooked // Keep the slot if it's not booked
+                    !isBooked
                 }
 
                 allSlots = availableSlots
-                Log.d("Time Slots All Slots:", "$allSlots") // You can verify the result here
+                Log.d("Time Slots All Slots:", "$allSlots")
             }
         }
 
@@ -764,6 +764,17 @@ fun UserSinglePage(
                                     }
                                 }
                             }
+                        }
+                        else {
+                            AddHeight(20.dp)
+                            Funca(
+                                text = addBookingResult.message,
+                                icon = Icons.Default.Mail,
+                                modifier = Modifier
+                                    .fillMaxWidth(fraction = 0.8f)
+                                    .height(50.dp)
+                            )
+                            AddHeight(20.dp)
                         }
                     }
                 }
