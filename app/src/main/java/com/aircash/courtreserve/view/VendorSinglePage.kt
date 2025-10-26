@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,21 +26,30 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.secondary
+import com.aircash.courtreserve.viewmodels.viewmodel.CourtViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.VendorTokenViewModel
 
 @Composable
 fun VendorSinglePage(
     id : Int,
-    vendorTokenViewModel: VendorTokenViewModel = hiltViewModel()
+    vendorTokenViewModel: VendorTokenViewModel = hiltViewModel(),
+    courtViewModel : CourtViewModel = hiltViewModel()
 ) {
     Surface {
         val vendorData = vendorTokenViewModel.vendorData.collectAsState().value
+        val court = courtViewModel.getVendorSingleCourtResult.collectAsState().value?.court
+
+        LaunchedEffect(vendorData) {
+            if (vendorData != null) {
+                courtViewModel.getCourt(token = vendorData.token, id = id)
+            }
+        }
 
         Column(
             modifier = Modifier.fillMaxSize().padding(top = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (vendorData != null) {
+            if (vendorData != null && court != null) {
                 ConstraintLayout(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -83,7 +92,7 @@ fun VendorSinglePage(
                             ) {
                                 Text("Total Sales", fontFamily = Lexend, fontSize = 10.sp)
 
-                                Text("Rs 4200", fontFamily = Lexend, fontSize = 17.sp)
+                                Text("${court.price * court.bookings.size}", fontFamily = Lexend, fontSize = 17.sp)
                             }
                         }
 
@@ -104,7 +113,7 @@ fun VendorSinglePage(
                             ) {
                                 Text("Total Visitors", fontFamily = Lexend, fontSize = 10.sp)
 
-                                Text("4200", fontFamily = Lexend, fontSize = 17.sp)
+                                Text("${10 * court.bookings.size}", fontFamily = Lexend, fontSize = 17.sp)
                             }
                         }
                     }

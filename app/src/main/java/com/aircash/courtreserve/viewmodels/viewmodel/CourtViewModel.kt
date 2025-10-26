@@ -41,7 +41,7 @@ class CourtViewModel @Inject constructor(
     val getCourtResult : StateFlow<SingleCourtResponse?> = _getCourtResult
 
     private val _getVendorSingleCourtResult = MutableStateFlow<GetVendorSingleCourtResponse?>(null)
-    val getVendorSingleCourtResponse : StateFlow<GetVendorSingleCourtResponse?> = _getVendorSingleCourtResult
+    val getVendorSingleCourtResult : StateFlow<GetVendorSingleCourtResponse?> = _getVendorSingleCourtResult
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
