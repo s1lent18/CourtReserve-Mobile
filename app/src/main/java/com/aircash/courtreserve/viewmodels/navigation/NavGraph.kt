@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aircash.courtreserve.models.modules.UserPreferences
+import com.aircash.courtreserve.view.BookingPage
 import com.aircash.courtreserve.view.Start
 import com.aircash.courtreserve.view.UserHome
 import com.aircash.courtreserve.view.UserLanding
@@ -96,7 +97,7 @@ fun NavGraph(
             val id = backStackEntry.arguments?.getInt("id") ?: -1
 
             if (id != -1) {
-                UserSinglePage(id = id)
+                UserSinglePage(id = id, navController = navController)
             }
         }
 
@@ -114,6 +115,12 @@ fun NavGraph(
             if (id != -1) {
                 VendorSinglePage(id = id)
             }
+        }
+
+        this.composable(
+            route = Screens.BookingPage.route
+        ) {
+            BookingPage(navController = navController)
         }
     }
 }

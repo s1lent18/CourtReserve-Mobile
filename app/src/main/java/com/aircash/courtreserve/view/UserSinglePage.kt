@@ -69,6 +69,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.aircash.courtreserve.R
 import com.aircash.courtreserve.models.model.BookingDisplay
@@ -76,6 +77,7 @@ import com.aircash.courtreserve.models.model.CreateBookingRequest
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.ui.theme.secondary
+import com.aircash.courtreserve.viewmodels.navigation.Screens
 import com.aircash.courtreserve.viewmodels.viewmodel.BookingViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.CourtViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
@@ -95,6 +97,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun UserSinglePage(
     id : Int,
+    navController: NavController,
     courtViewModel : CourtViewModel = hiltViewModel(),
     bookingViewModel: BookingViewModel = hiltViewModel(),
     userTokenViewModel : UserTokenViewModel = hiltViewModel()
@@ -147,6 +150,12 @@ fun UserSinglePage(
             }
         }
 
+        LaunchedEffect(addBookingResult) {
+            delay(2000)
+            clicked = false
+            navController.navigate(route = Screens.UserHome.route)
+        }
+
         val displayList = court?.bookedTimes?.map { booking ->
             val start = LocalDateTime.parse(booking.startTime, formatter)
             val end = LocalDateTime.parse(booking.endTime, formatter)
@@ -191,8 +200,6 @@ fun UserSinglePage(
                     token = "Bearer ${userData.token}",
                     request = createBookingResult
                 )
-
-                clicked = false
             }
         }
 
@@ -654,18 +661,20 @@ fun UserSinglePage(
                             )
 
                             AddHeight(20.dp)
-                            Button(
-                                onClick = { clicked = true },
-                                modifier = Modifier
-                                    .fillMaxWidth(fraction = 0.85f)
-                                    .height(50.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = primary,
-                                    contentColor = Color.White
-                                ),
-                                shape = RoundedCornerShape(5.dp)
-                            ) {
-                                Text("Confirm Booking")
+                            if (!clicked) {
+                                Button(
+                                    onClick = { clicked = true },
+                                    modifier = Modifier
+                                        .fillMaxWidth(fraction = 0.85f)
+                                        .height(50.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = primary,
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(5.dp)
+                                ) {
+                                    Text("Confirm Booking", fontFamily = Lexend)
+                                }
                             }
                             AddHeight(20.dp)
 

@@ -5,6 +5,7 @@ import com.aircash.courtreserve.R
 import com.aircash.courtreserve.models.interfaces.AddBookingAPI
 import com.aircash.courtreserve.models.interfaces.AddCourtAPI
 import com.aircash.courtreserve.models.interfaces.AddReviewAPI
+import com.aircash.courtreserve.models.interfaces.GetAllBookingsAPI
 import com.aircash.courtreserve.models.interfaces.GetAllCourtsAPI
 import com.aircash.courtreserve.models.interfaces.GetCourtAPI
 import com.aircash.courtreserve.models.interfaces.GetPopularCourtsAPI
@@ -106,5 +107,11 @@ object NetworkModule {
     @Singleton
     fun provideGetVendorSingleCourtAPI(retrofit: Retrofit) : GetVendorSingleCourtAPI {
         return retrofit.create(GetVendorSingleCourtAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetAllBookingsResponseAPI(retrofit: Retrofit) : GetAllBookingsAPI {
+        return retrofit.create(GetAllBookingsAPI::class.java)
     }
 }
