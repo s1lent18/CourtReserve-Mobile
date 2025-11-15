@@ -2,14 +2,12 @@ package com.aircash.courtreserve.view
 
 import android.util.Log
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +21,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AssignmentTurnedIn
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Pending
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,9 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,9 +55,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
-import com.aircash.courtreserve.R
 import com.aircash.courtreserve.models.model.BookingXX
 import com.aircash.courtreserve.models.model.NavigationBarItems
 import com.aircash.courtreserve.models.model.Status
@@ -179,9 +179,9 @@ fun BookingPage(
                 }
             }
         }
-    ) {
+    ) { values ->
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(values),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ConstraintLayout (
@@ -312,7 +312,7 @@ fun StatusBar(
         modifier = Modifier
             .width(100.dp)
             .height(35.dp),
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(8.dp),
         containerColor = if (isSelected) primary else Color(0xFF1A1A1A),
         contentColor = Color.White,
     ) {
@@ -331,8 +331,7 @@ fun BookingCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp),
+            .fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = primary,
             contentColor = Color.White
@@ -341,35 +340,11 @@ fun BookingCard(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.3f)
-                    .fillMaxHeight()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(10.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                val painter = rememberAsyncImagePainter(model = R.string.HomeImageUrl)
-                val imageState = painter.state
-                Image(
-                    painter = painter,
-                    contentDescription = "Profile Picture",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                if (imageState is AsyncImagePainter.State.Loading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .align(Alignment.Center)
-                    )
-                }
-            }
-
             Column(
                 modifier = Modifier
                     .padding(start = 8.dp, top = 10.dp),
@@ -381,8 +356,26 @@ fun BookingCard(
                         .toLocalDate()
                         .toString(),
                     color = Color.White,
-                    fontSize = 15.sp,
+                    fontSize = 9.sp,
                     fontFamily = Lexend
+                )
+            }
+
+            Box(
+                modifier = Modifier.fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    when (booking.status) {
+                        "PENDING" -> Icons.Default.Pending
+                        "EXPIRED" -> Icons.Default.Delete
+                        "CANCELED" -> Icons.Default.Cancel
+                        "REJECTED" -> Icons.Default.StopCircle
+                        "CONFIRMED" -> Icons.Default.AssignmentTurnedIn
+                        else -> Icons.Default.Schedule
+                    },
+                    contentDescription = null,
+                    tint = Color.White
                 )
             }
         }
