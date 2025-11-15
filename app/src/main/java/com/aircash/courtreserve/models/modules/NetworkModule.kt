@@ -7,6 +7,7 @@ import com.aircash.courtreserve.models.interfaces.AddCourtAPI
 import com.aircash.courtreserve.models.interfaces.AddReviewAPI
 import com.aircash.courtreserve.models.interfaces.GetAllBookingsAPI
 import com.aircash.courtreserve.models.interfaces.GetAllCourtsAPI
+import com.aircash.courtreserve.models.interfaces.GetAllTournamentsAPI
 import com.aircash.courtreserve.models.interfaces.GetCourtAPI
 import com.aircash.courtreserve.models.interfaces.GetPopularCourtsAPI
 import com.aircash.courtreserve.models.interfaces.GetVendorSingleCourtAPI
@@ -14,6 +15,7 @@ import com.aircash.courtreserve.models.interfaces.UserLoginAPI
 import com.aircash.courtreserve.models.interfaces.UserRegistrationAPI
 import com.aircash.courtreserve.models.interfaces.VendorLoginAPI
 import com.aircash.courtreserve.models.interfaces.VendorRegistrationAPI
+import com.aircash.courtreserve.models.model.GetAllTournamentsResponse
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -113,5 +115,11 @@ object NetworkModule {
     @Singleton
     fun provideGetAllBookingsResponseAPI(retrofit: Retrofit) : GetAllBookingsAPI {
         return retrofit.create(GetAllBookingsAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetAllTournamentsResponseAPI(retrofit: Retrofit) : GetAllTournamentsAPI {
+        return retrofit.create(GetAllTournamentsAPI::class.java)
     }
 }

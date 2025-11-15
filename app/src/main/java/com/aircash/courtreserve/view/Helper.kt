@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aircash.courtreserve.models.model.Content
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import java.time.Duration
@@ -177,6 +178,6 @@ fun TimeSlotItem(slot: Pair<LocalTime, LocalTime>, isSelected: Boolean, onClick:
 }
 
 @Composable
-fun TournamentCard() {
+fun TournamentCard(tournament: Content) {
 
 }

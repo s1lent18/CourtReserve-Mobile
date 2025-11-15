@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,6 +62,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.aircash.courtreserve.R
+import com.aircash.courtreserve.models.model.Content
 import com.aircash.courtreserve.models.model.CourtXXX
 import com.aircash.courtreserve.models.model.NavigationBarItems
 import com.aircash.courtreserve.models.model.TournamentTypes
@@ -68,12 +70,15 @@ import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.viewmodels.navigation.Screens
 import com.aircash.courtreserve.viewmodels.viewmodel.CourtViewModel
+import com.aircash.courtreserve.viewmodels.viewmodel.TournamentViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.exyte.animatednavbar.utils.noRippleClickable
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun CourtInfo(
@@ -133,6 +138,7 @@ fun CourtInfo(
 fun UserHome(
     navController: NavController,
     userTokenViewModel: UserTokenViewModel = hiltViewModel(),
+    tournamentViewModel : TournamentViewModel = hiltViewModel(),
     courtViewModel: CourtViewModel = hiltViewModel()
 ) {
     val insets = WindowInsets.navigationBars
@@ -140,11 +146,38 @@ fun UserHome(
     val navigationBarItems = remember { NavigationBarItems.entries }
     val bottomInsetDp = with(LocalDensity.current) { insets.getBottom(LocalDensity.current).toDp() }
     val popularCourts = courtViewModel.getPopularCourtsResult.collectAsState().value
+    val allTournaments = tournamentViewModel.getAllTournamentsResult.collectAsState().value
     val userData = userTokenViewModel.userData.collectAsState().value
     var searchQuery by remember { mutableStateOf("") }
     val isLoading = courtViewModel.isLoading.collectAsState().value
     val errorMessage = courtViewModel.errorMessage.collectAsState().value
     val selectedOption = remember { mutableStateOf("UPCOMING") }
+    val upcoming = remember { mutableStateListOf<Content>() }
+    val ongoing = remember { mutableStateListOf<Content>() }
+    val results = remember { mutableStateListOf<Content>() }
+
+    LaunchedEffect(allTournaments) {
+        Log.d("Tournament Check", "$allTournaments")
+        results.clear()
+        ongoing.clear()
+        upcoming.clear()
+
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val today = LocalDate.now()
+
+        allTournaments?.content?.forEach { tournament ->
+
+            val start = LocalDate.parse(tournament.startDate, formatter)
+            val end = LocalDate.parse(tournament.endDate, formatter)
+
+            when {
+                start.isAfter(today) && end.isAfter(today) -> upcoming.add(tournament)
+                start.isBefore(today) && end.isAfter(today) -> ongoing.add(tournament)
+                start.isEqual(today) || end.isEqual(today) -> ongoing.add(tournament)
+                start.isBefore(today) && end.isBefore(today) -> results.add(tournament)
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -214,6 +247,10 @@ fun UserHome(
             Log.d("UserDataCheck", "$userData")
             if (userData != null) {
                 courtViewModel.getPopularCourts(token = userData.token, location = "Karachi")
+                tournamentViewModel.getAllTournaments(
+                    token = "Bearer ${userData.token}",
+                    location = "Karachi"
+                )
             }
         }
 
@@ -428,6 +465,21 @@ fun UserHome(
                                 )
                                 AddWidth(20.dp)
                             }
+                        }
+                    }
+
+                    when (selectedOption.value) {
+                        "UPCOMING" -> items(upcoming) { tournament ->
+                            TournamentCard(tournament)
+                            AddHeight(10.dp)
+                        }
+                        "ONGOING" -> items(ongoing) { tournament ->
+                            TournamentCard(tournament)
+                            AddHeight(10.dp)
+                        }
+                        "RESULTS" -> items(results) { tournament ->
+                            TournamentCard(tournament)
+                            AddHeight(10.dp)
                         }
                     }
                 }
