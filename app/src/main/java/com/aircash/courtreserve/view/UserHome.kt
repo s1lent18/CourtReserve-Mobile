@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -62,10 +63,10 @@ import androidx.navigation.NavController
 import com.aircash.courtreserve.R
 import com.aircash.courtreserve.models.model.CourtXXX
 import com.aircash.courtreserve.models.model.NavigationBarItems
+import com.aircash.courtreserve.models.model.TournamentTypes
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.viewmodels.navigation.Screens
-import com.aircash.courtreserve.viewmodels.viewmodel.BookingViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.CourtViewModel
 import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
 import com.exyte.animatednavbar.AnimatedNavigationBar
@@ -131,7 +132,6 @@ fun CourtInfo(
 @Composable
 fun UserHome(
     navController: NavController,
-    bookingViewModel : BookingViewModel = hiltViewModel(),
     userTokenViewModel: UserTokenViewModel = hiltViewModel(),
     courtViewModel: CourtViewModel = hiltViewModel()
 ) {
@@ -144,6 +144,7 @@ fun UserHome(
     var searchQuery by remember { mutableStateOf("") }
     val isLoading = courtViewModel.isLoading.collectAsState().value
     val errorMessage = courtViewModel.errorMessage.collectAsState().value
+    val selectedOption = remember { mutableStateOf("UPCOMING") }
 
     Scaffold(
         modifier = Modifier
@@ -171,20 +172,20 @@ fun UserHome(
                                     NavigationBarItems.Home -> {
 
                                     }
-
                                     NavigationBarItems.Msg -> {
                                         navController.navigate(Screens.BookingPage.route)
                                     }
-
                                     NavigationBarItems.Logout -> {
                                         userTokenViewModel.logout()
                                         navController.navigate(Screens.UserLanding.route) {
                                             popUpTo(0) { inclusive = true }
                                         }
                                     }
+                                    NavigationBarItems.Tournament -> {
 
-                                    NavigationBarItems.Account -> {
-                                        //navController.navigate(route = Screens.Account.route)
+                                    }
+                                    NavigationBarItems.Team -> {
+
                                     }
                                 }
                             },
@@ -208,8 +209,7 @@ fun UserHome(
                 }
             }
         }
-    ) {
-
+    ) { values ->
         LaunchedEffect(userData) {
             Log.d("UserDataCheck", "$userData")
             if (userData != null) {
@@ -218,7 +218,7 @@ fun UserHome(
         }
 
         Column (
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(values),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             ConstraintLayout (
@@ -336,7 +336,7 @@ fun UserHome(
                         top.linkTo(topImage.bottom, margin = 20.dp)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
-                        bottom.linkTo(parent.bottom, margin = 30.dp)
+                        bottom.linkTo(parent.bottom, margin = 40.dp)
                         height = Dimension.fillToConstraints
                         width = Dimension.percent(0.9f)
                     }
@@ -401,6 +401,32 @@ fun UserHome(
                                         )
                                     }
                                 }
+                            }
+                        }
+                    }
+
+                    item {
+                        Row{
+                            Text("Tournaments", fontFamily = Lexend, fontSize = 17.sp)
+                        }
+
+                        AddHeight(15.dp)
+                    }
+
+                    item {
+                        LazyRow(
+                            modifier = Modifier
+                                .height(50.dp)
+                                .fillMaxWidth(),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+                        ) {
+                            items(TournamentTypes.entries) { option ->
+                                StatusBar(
+                                    status = option.name,
+                                    isSelected = selectedOption.value == option.name,
+                                    onclick = { selectedOption.value = option.name }
+                                )
+                                AddWidth(20.dp)
                             }
                         }
                     }

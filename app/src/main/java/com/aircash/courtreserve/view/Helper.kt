@@ -175,3 +175,8 @@ fun TimeSlotItem(slot: Pair<LocalTime, LocalTime>, isSelected: Boolean, onClick:
         Text("${slot.first} - ${slot.second}", color = Color.White)
     }
 }
+
+@Composable
+fun TournamentCard() {
+
+}

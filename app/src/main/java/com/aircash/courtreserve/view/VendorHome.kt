@@ -87,6 +87,7 @@ fun VendorHome(
                             top.linkTo(text.bottom, margin = 20.dp)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
+                            bottom.linkTo(parent.bottom, margin = 40.dp)
                             height = Dimension.fillToConstraints
                             width = Dimension.percent(0.9f)
                         },

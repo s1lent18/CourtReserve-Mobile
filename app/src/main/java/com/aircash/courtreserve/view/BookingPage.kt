@@ -154,9 +154,8 @@ fun BookingPage(
                                         }
                                     }
 
-                                    NavigationBarItems.Account -> {
-                                        //navController.navigate(route = Screens.Account.route)
-                                    }
+                                    NavigationBarItems.Tournament -> {}
+                                    NavigationBarItems.Team -> {}
                                 }
                             },
 
