@@ -6,17 +6,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -36,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.aircash.courtreserve.models.model.Content
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
+import com.aircash.courtreserve.ui.theme.secondary
 import java.time.Duration
 import java.time.LocalTime
 
@@ -178,6 +184,52 @@ fun TimeSlotItem(slot: Pair<LocalTime, LocalTime>, isSelected: Boolean, onClick:
 }
 
 @Composable
-fun TournamentCard(tournament: Content) {
+fun TournamentCard(tournament : Content) {
+    ElevatedButton(
+        onClick = {},
+        modifier = Modifier.fillMaxWidth(fraction = 0.9f),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .size(50.dp)
+                        .background(secondary),
+                    contentAlignment = Alignment.Center,
 
+                ) {
+                    Text(tournament.name[0].uppercase(), color = Color.White, fontFamily = Lexend)
+                }
+                
+                AddWidth(15.dp)
+
+                Column (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start,
+                ) {
+                    Text(tournament.name, fontSize = 12.sp, fontFamily = Lexend)
+                    AddHeight(5.dp)
+                    Text("Venue: ${tournament.courtName}", fontSize = 12.sp, fontFamily = Lexend)
+                }
+            }
+            AddHeight(10.dp)
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Fees: 1000", fontSize = 12.sp, fontFamily = Lexend)
+                Text("Price: ${tournament.prize}", fontSize = 12.sp, fontFamily = Lexend)
+            }
+        }
+    }
 }
