@@ -1,0 +1,8 @@
+package com.aircash.courtreserve.models.model
+
+data class Member(
+    val id: Int,
+    val name: String,
+    val role: String,
+    val teamId: TeamId
+)

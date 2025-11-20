@@ -77,7 +77,7 @@ fun BookingPage(
     userTokenViewModel: UserTokenViewModel = hiltViewModel()
 ) {
     val insets = WindowInsets.navigationBars
-    var selectedIndex by remember { mutableIntStateOf(1) }
+    var selectedIndex by remember { mutableIntStateOf(2) }
     val navigationBarItems = remember { NavigationBarItems.entries }
     val userData = userTokenViewModel.userData.collectAsState().value
     val selectedOption = remember { mutableStateOf("PENDING") }

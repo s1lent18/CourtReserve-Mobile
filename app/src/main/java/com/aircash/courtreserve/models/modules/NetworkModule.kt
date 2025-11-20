@@ -5,17 +5,19 @@ import com.aircash.courtreserve.R
 import com.aircash.courtreserve.models.interfaces.AddBookingAPI
 import com.aircash.courtreserve.models.interfaces.AddCourtAPI
 import com.aircash.courtreserve.models.interfaces.AddReviewAPI
+import com.aircash.courtreserve.models.interfaces.CreateTeamAPI
 import com.aircash.courtreserve.models.interfaces.GetAllBookingsAPI
 import com.aircash.courtreserve.models.interfaces.GetAllCourtsAPI
 import com.aircash.courtreserve.models.interfaces.GetAllTournamentsAPI
 import com.aircash.courtreserve.models.interfaces.GetCourtAPI
 import com.aircash.courtreserve.models.interfaces.GetPopularCourtsAPI
+import com.aircash.courtreserve.models.interfaces.GetSingleTeamAPI
+import com.aircash.courtreserve.models.interfaces.GetSingleTournamentAPI
 import com.aircash.courtreserve.models.interfaces.GetVendorSingleCourtAPI
 import com.aircash.courtreserve.models.interfaces.UserLoginAPI
 import com.aircash.courtreserve.models.interfaces.UserRegistrationAPI
 import com.aircash.courtreserve.models.interfaces.VendorLoginAPI
 import com.aircash.courtreserve.models.interfaces.VendorRegistrationAPI
-import com.aircash.courtreserve.models.model.GetAllTournamentsResponse
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -121,5 +123,23 @@ object NetworkModule {
     @Singleton
     fun provideGetAllTournamentsResponseAPI(retrofit: Retrofit) : GetAllTournamentsAPI {
         return retrofit.create(GetAllTournamentsAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetSingleTournamentAPI(retrofit: Retrofit) : GetSingleTournamentAPI {
+        return retrofit.create(GetSingleTournamentAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCreateTeamAPI(retrofit: Retrofit) : CreateTeamAPI {
+        return retrofit.create(CreateTeamAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetSingleTeamAPI(retrofit: Retrofit) : GetSingleTeamAPI {
+        return retrofit.create(GetSingleTeamAPI::class.java)
     }
 }

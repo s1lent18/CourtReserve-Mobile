@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import com.aircash.courtreserve.models.modules.UserPreferences
 import com.aircash.courtreserve.view.BookingPage
 import com.aircash.courtreserve.view.Start
+import com.aircash.courtreserve.view.TeamPage
 import com.aircash.courtreserve.view.UserHome
 import com.aircash.courtreserve.view.UserLanding
 import com.aircash.courtreserve.view.UserSignup
@@ -121,6 +122,25 @@ fun NavGraph(
             route = Screens.BookingPage.route
         ) {
             BookingPage(navController = navController)
+        }
+
+        this.composable(
+            route = Screens.UserTeamPage.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: -1
+
+            if (id != -1) {
+                TeamPage(
+                    navController = navController,
+                    id = id
+                )
+            }
         }
     }
 }
