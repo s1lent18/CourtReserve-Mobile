@@ -1,7 +1,13 @@
 package com.aircash.courtreserve.view
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,14 +31,18 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -41,6 +51,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import com.aircash.courtreserve.models.model.Content
 import com.aircash.courtreserve.ui.theme.Lexend
@@ -48,6 +59,7 @@ import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.ui.theme.secondary
 import java.time.Duration
 import java.time.LocalTime
+import java.util.concurrent.Executor
 
 @Composable
 fun AddWidth(space: Dp) {
@@ -281,6 +293,52 @@ fun TeamMember(
             color = Color.White,
             modifier = Modifier.padding(5.dp),
             fontSize = 13.sp
+        )
+    }
+}
+
+fun capturePhoto(
+    context: Context,
+    cameraController: LifecycleCameraController,
+    onPhotoCaptured: (Bitmap) -> Unit
+) {
+    val mainExecutor: Executor = ContextCompat.getMainExecutor(context)
+
+    cameraController.takePicture(mainExecutor, object : ImageCapture.OnImageCapturedCallback() {
+        override fun onCaptureSuccess(image: ImageProxy) {
+            val correctedBitmap: Bitmap = image
+                .toBitmap()
+                //.rotateBitmap(image.imageInfo.rotationDegrees)
+
+            onPhotoCaptured(correctedBitmap)
+            image.close()
+        }
+
+        override fun onError(exception: ImageCaptureException) {
+            Log.e("CameraContent", "Error capturing image", exception)
+        }
+    })
+}
+
+@Composable
+fun LastPhotoPreview(
+    modifier: Modifier = Modifier,
+    lastCapturedPhoto: Bitmap
+) {
+
+    val capturedPhoto: ImageBitmap = remember(lastCapturedPhoto.hashCode()) { lastCapturedPhoto.asImageBitmap() }
+
+    Card(
+        modifier = modifier
+            .size(128.dp)
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Image(
+            bitmap = capturedPhoto,
+            contentDescription = "Last captured photo",
+            contentScale = ContentScale.Crop
         )
     }
 }

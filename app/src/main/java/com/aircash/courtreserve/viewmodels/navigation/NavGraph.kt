@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aircash.courtreserve.models.modules.UserPreferences
+import com.aircash.courtreserve.view.Account
 import com.aircash.courtreserve.view.BookingPage
 import com.aircash.courtreserve.view.SingleTournamentPage
 import com.aircash.courtreserve.view.Start
@@ -33,6 +34,7 @@ fun NavGraph(
     startDestination: String,
     permissionState: MultiplePermissionsState
 ) {
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -165,6 +167,16 @@ fun NavGraph(
                     id = id
                 )
             }
+        }
+
+        this.composable(
+            route = Screens.Account.route
+        ) {
+            Account(
+                navController = navController,
+                hasPermission = permissionState.allPermissionsGranted,
+                onRequestPermission = permissionState::launchMultiplePermissionRequest
+            )
         }
     }
 }
