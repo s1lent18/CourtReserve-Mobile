@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.aircash.courtreserve.models.modules.UserPreferences
 import com.aircash.courtreserve.view.BookingPage
+import com.aircash.courtreserve.view.SingleTournamentPage
 import com.aircash.courtreserve.view.Start
 import com.aircash.courtreserve.view.TeamPage
 import com.aircash.courtreserve.view.UserHome
@@ -21,12 +22,16 @@ import com.aircash.courtreserve.view.VendorHome
 import com.aircash.courtreserve.view.VendorLanding
 import com.aircash.courtreserve.view.VendorSignup
 import com.aircash.courtreserve.view.VendorSinglePage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.MultiplePermissionsState
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun NavGraph(
     navController: NavHostController = rememberNavController(),
     startDestination: String,
+    permissionState: MultiplePermissionsState
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -137,6 +142,25 @@ fun NavGraph(
 
             if (id != -1) {
                 TeamPage(
+                    navController = navController,
+                    id = id
+                )
+            }
+        }
+
+        this.composable(
+            route = Screens.SingleTournamentScreen.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: -1
+
+            if (id != -1) {
+                SingleTournamentPage(
                     navController = navController,
                     id = id
                 )
