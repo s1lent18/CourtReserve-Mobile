@@ -12,14 +12,10 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,39 +34,38 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.aircash.courtreserve.models.model.NavigationBarItems
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.viewmodels.navigation.Screens
-import com.aircash.courtreserve.viewmodels.viewmodel.TeamViewModel
+import com.aircash.courtreserve.viewmodels.viewmodel.TournamentViewModel
+import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.exyte.animatednavbar.animation.balltrajectory.Parabolic
 import com.exyte.animatednavbar.animation.indendshape.Height
 import com.exyte.animatednavbar.animation.indendshape.shapeCornerRadius
 import com.exyte.animatednavbar.utils.noRippleClickable
-import com.aircash.courtreserve.viewmodels.viewmodel.UserTokenViewModel
 
 @Composable
-fun TeamPage(
+fun SingleTournamentPage(
     id : Int,
-    navController : NavController,
-    teamViewModel: TeamViewModel = hiltViewModel(),
-    userTokenViewModel : UserTokenViewModel = hiltViewModel()
+    navController: NavController,
+    userTokenViewModel : UserTokenViewModel = hiltViewModel(),
+    tournamentViewModel: TournamentViewModel = hiltViewModel()
 ) {
-    val gridState = rememberLazyStaggeredGridState()
+
     val insets = WindowInsets.navigationBars
     var selectedIndex by remember { mutableIntStateOf(1) }
     val navigationBarItems = remember { NavigationBarItems.entries }
     val userData = userTokenViewModel.userData.collectAsState().value
-    val getSingleTeamResult = teamViewModel.getSingleTeamResult.collectAsState().value
+    val getSingleTournamentResult = tournamentViewModel.getSingleTournamentResult.collectAsState().value
     val bottomInsetDp = with(LocalDensity.current) { insets.getBottom(LocalDensity.current).toDp() }
 
     LaunchedEffect(userData) {
         if (userData != null) {
-            teamViewModel.getSingleTeam(token = "Bearer ${userData.token}", id = id)
+            tournamentViewModel.getSingleTournament(token = "Bearer ${userData.token}", id = id)
         }
     }
 
@@ -142,113 +137,84 @@ fun TeamPage(
                 .fillMaxSize()
                 .padding(values)
         ) {
-            ConstraintLayout (
+            ConstraintLayout(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding()
             ) {
-                if (getSingleTeamResult == null) {
+                if (getSingleTournamentResult == null) {
                     Box(
-                       modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator()
                     }
                 }
                 else {
-                    val (infoRow, teamDesign, buttonRow) = createRefs()
+                    val (topRow, infoRow) = createRefs()
 
                     Row(
-                        modifier = Modifier
-                            .constrainAs(infoRow) {
-                                top.linkTo(parent.top)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                                width = Dimension.percent(0.9f)
-                            },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            Text(
-                                "Hello, ${getSingleTeamResult.singleTeam.name}",
-                                color = primary,
-                                fontSize = 20.sp,
-                                fontFamily = Lexend
-                            )
-                            Text(
-                                "Your ${getSingleTeamResult.singleTeam.sport} Team",
-                                color = Color.Gray,
-                                fontSize = 15.sp,
-                                fontFamily = Lexend
-                            )
-                        }
-                    }
-
-                    LazyVerticalStaggeredGrid(
-                        state = gridState,
-                        columns = StaggeredGridCells.Fixed(2),
-                        verticalItemSpacing = 16.dp,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.constrainAs(teamDesign) {
-                            top.linkTo(infoRow.bottom, margin = 30.dp)
+                        modifier = Modifier.constrainAs(topRow) {
+                            top.linkTo(parent.top)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
-                            width = Dimension.percent(0.9f)
-                            bottom.linkTo(buttonRow.top, margin = 20.dp)
-                            height = Dimension.fillToConstraints
-                        }
+                        },
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        item {
-                            Text(
-                                text = "${getSingleTeamResult.singleTeam.members.size} Team Members",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(10.dp)
-                            )
-                        }
-
-                        items(getSingleTeamResult.singleTeam.members) { member ->
-                            AddHeight(80.dp)
-                            TeamMember(
-                                text = member.name,
-                                image = "",
-                                onClick = {}
-                            )
-                        }
+                        Text(
+                            getSingleTournamentResult.singleTournament.name,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Lexend
+                        )
                     }
 
                     Row(
-                        modifier = Modifier
-                            .constrainAs(buttonRow) {
-                                top.linkTo(teamDesign.top, margin = 20.dp)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                                bottom.linkTo(parent.bottom, margin = 20.dp)
-                                width = Dimension.percent(0.9f)
-                            },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier.constrainAs(topRow) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        },
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Button(
-                            onClick = {},
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(50.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = primary,
-                                contentColor = Color.White
-                            )
+                        Text(
+                            "Tournament",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Lexend
+                        )
+                    }
+
+                    ElevatedCard(
+                        modifier = Modifier.constrainAs(infoRow) {
+                            top.linkTo(topRow.bottom, margin = 20.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                            .height(50.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = primary,
+                            contentColor = Color.White
+                        ),
+                        elevation = CardDefaults.elevatedCardElevation(10.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                "Add New Members",
-                                fontSize = 17.sp,
-                                fontFamily = Lexend,
-                                fontWeight = FontWeight.Bold
+                                getSingleTournamentResult.singleTournament.name,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                                fontFamily = Lexend
+                            )
+                            Text(
+                                "${getSingleTournamentResult.singleTournament.tournamentTeams.size} teams | ${getSingleTournamentResult.singleTournament.startDate} - ${getSingleTournamentResult.singleTournament.endDate}",
+                                fontSize = 11.sp,
+                                fontFamily = Lexend
                             )
                         }
                     }

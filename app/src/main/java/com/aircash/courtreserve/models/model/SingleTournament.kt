@@ -10,7 +10,7 @@ data class SingleTournament(
     val sport: String,
     val startDate: String,
     val status: String,
-    val tournamentTeams: List<Any>,
+    val tournamentTeams: List<TournamentTeam>,
     val userId: Int,
     val userName: String
 )
