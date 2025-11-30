@@ -3,6 +3,7 @@ package com.aircash.courtreserve.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -53,10 +54,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
+import com.aircash.courtreserve.CourtReserve
 import com.aircash.courtreserve.models.model.Content
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.ui.theme.secondary
+import io.github.jan.supabase.storage.storage
 import java.time.Duration
 import java.time.LocalTime
 import java.util.concurrent.Executor
@@ -341,4 +344,41 @@ fun LastPhotoPreview(
             contentScale = ContentScale.Crop
         )
     }
+}
+
+fun uriToBytes(context: Context, uri: Uri): ByteArray {
+    return context.contentResolver.openInputStream(uri)?.use {
+        it.readBytes()
+    } ?: ByteArray(0)
+}
+
+suspend fun uploadImage(context: Context, uri: Uri): String {
+    val supabase = (context.applicationContext as CourtReserve).supabase
+
+    val bytes = uriToBytes(context, uri)
+
+    val fileName = "img_${System.currentTimeMillis()}.jpg"
+
+    val bucket = "images"
+
+    val result = supabase.storage.from(bucket).upload(
+        path = fileName,
+        data = bytes
+    )
+
+    return result
+}
+
+fun getPublicUrl(context: Context, path: String): String {
+    val supabase = (context.applicationContext as CourtReserve).supabase
+    return supabase.storage
+        .from("images")
+        .publicUrl(path)
+}
+
+suspend fun deleteImage(context: Context, path: String) {
+    val supabase = (context.applicationContext as CourtReserve).supabase
+    supabase.storage
+        .from("images")
+        .delete(paths = listOf(path))
 }

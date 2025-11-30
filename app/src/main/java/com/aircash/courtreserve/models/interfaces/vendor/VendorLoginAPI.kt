@@ -1,4 +1,4 @@
-package com.aircash.courtreserve.models.interfaces
+package com.aircash.courtreserve.models.interfaces.vendor
 
 import com.aircash.courtreserve.models.model.VendorLoginRequest
 import com.aircash.courtreserve.models.model.VendorLoginResponse

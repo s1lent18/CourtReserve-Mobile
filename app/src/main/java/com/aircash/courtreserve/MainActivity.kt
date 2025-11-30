@@ -12,10 +12,16 @@ import com.aircash.courtreserve.viewmodels.navigation.Screens
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.jan.supabase.SupabaseClient
+import javax.inject.Inject
 
 @AndroidEntryPoint
+@OptIn(ExperimentalPermissionsApi::class)
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalPermissionsApi::class)
+
+    @Inject
+    lateinit var supabase: SupabaseClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

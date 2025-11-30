@@ -3,8 +3,8 @@ package com.aircash.courtreserve.viewmodels.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aircash.courtreserve.models.interfaces.GetAllTournamentsAPI
-import com.aircash.courtreserve.models.interfaces.GetSingleTournamentAPI
+import com.aircash.courtreserve.models.interfaces.user.GetAllTournamentsAPI
+import com.aircash.courtreserve.models.interfaces.user.GetSingleTournamentAPI
 import com.aircash.courtreserve.models.model.GetAllTournamentsResponse
 import com.aircash.courtreserve.models.model.GetSingleTournamentResponse
 import dagger.hilt.android.lifecycle.HiltViewModel

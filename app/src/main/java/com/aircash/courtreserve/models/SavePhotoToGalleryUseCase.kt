@@ -8,14 +8,14 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import dagger.Component
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.OutputStream
+import javax.inject.Inject
 
-@Component.Factory
-class SavePhotoToGalleryUseCase(
-    private val context: Context,
+class SavePhotoToGalleryUseCase @Inject constructor(
+    @ApplicationContext private val context: Context
 ) {
 
     suspend fun call(capturePhotoBitmap: Bitmap): Result<Unit> = withContext(Dispatchers.IO) {

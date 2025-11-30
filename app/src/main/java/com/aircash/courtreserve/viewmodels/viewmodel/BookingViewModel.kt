@@ -3,8 +3,8 @@ package com.aircash.courtreserve.viewmodels.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aircash.courtreserve.models.interfaces.AddBookingAPI
-import com.aircash.courtreserve.models.interfaces.GetAllBookingsAPI
+import com.aircash.courtreserve.models.interfaces.user.AddBookingAPI
+import com.aircash.courtreserve.models.interfaces.user.GetAllBookingsAPI
 import com.aircash.courtreserve.models.model.CreateBookingRequest
 import com.aircash.courtreserve.models.model.CreateBookingResponse
 import com.aircash.courtreserve.models.model.GetAllBookingsResponse

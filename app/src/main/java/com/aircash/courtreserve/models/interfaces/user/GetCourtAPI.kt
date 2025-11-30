@@ -1,4 +1,4 @@
-package com.aircash.courtreserve.models.interfaces
+package com.aircash.courtreserve.models.interfaces.user
 
 import com.aircash.courtreserve.models.model.SingleCourtResponse
 import retrofit2.Response
@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface GetCourtAPI {
 
-    @GET("/user/getCourt")
+    @GET("/court/getCourt")
     suspend fun getCourt(
         @Query("id") id: Int,
         @Header("Authorization") token : String,

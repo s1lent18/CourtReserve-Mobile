@@ -1,4 +1,4 @@
-package com.aircash.courtreserve.models.interfaces
+package com.aircash.courtreserve.models.interfaces.vendor
 
 import com.aircash.courtreserve.models.model.GetVendorSingleCourtResponse
 import retrofit2.Response
@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface GetVendorSingleCourtAPI {
 
-    @GET("/vendor/getSingleCourt")
+    @GET("/court/getSingleCourt")
     suspend fun getVendorCourt(
         @Query("id") id: Int,
         @Header("Authorization") token : String,

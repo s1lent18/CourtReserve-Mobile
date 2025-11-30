@@ -2,7 +2,7 @@ package com.aircash.courtreserve.viewmodels.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aircash.courtreserve.models.interfaces.AddReviewAPI
+import com.aircash.courtreserve.models.interfaces.user.AddReviewAPI
 import com.aircash.courtreserve.models.model.AddReviewRequest
 import com.aircash.courtreserve.models.model.AddReviewResponse
 import dagger.hilt.android.lifecycle.HiltViewModel

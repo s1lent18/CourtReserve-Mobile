@@ -1,4 +1,4 @@
-package com.aircash.courtreserve.models.interfaces
+package com.aircash.courtreserve.models.interfaces.user
 
 import com.aircash.courtreserve.models.model.CreateTeamRequest
 import com.aircash.courtreserve.models.model.GetCreateTeamResponse
@@ -9,7 +9,7 @@ import retrofit2.http.POST
 
 interface CreateTeamAPI {
 
-    @POST("/user/createTeam/")
+    @POST("/team/createTeam")
     suspend fun createTeam(
         @Header("Authorization") token : String,
         @Body createTeamRequest: CreateTeamRequest

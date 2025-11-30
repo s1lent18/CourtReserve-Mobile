@@ -2,11 +2,11 @@ package com.aircash.courtreserve.viewmodels.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aircash.courtreserve.models.interfaces.AddCourtAPI
-import com.aircash.courtreserve.models.interfaces.GetAllCourtsAPI
-import com.aircash.courtreserve.models.interfaces.GetCourtAPI
-import com.aircash.courtreserve.models.interfaces.GetPopularCourtsAPI
-import com.aircash.courtreserve.models.interfaces.GetVendorSingleCourtAPI
+import com.aircash.courtreserve.models.interfaces.vendor.AddCourtAPI
+import com.aircash.courtreserve.models.interfaces.vendor.GetAllCourtsAPI
+import com.aircash.courtreserve.models.interfaces.user.GetCourtAPI
+import com.aircash.courtreserve.models.interfaces.user.GetPopularCourtsAPI
+import com.aircash.courtreserve.models.interfaces.vendor.GetVendorSingleCourtAPI
 import com.aircash.courtreserve.models.model.AddCourtRequest
 import com.aircash.courtreserve.models.model.AddCourtResponse
 import com.aircash.courtreserve.models.model.GetPopularCourtsResponse

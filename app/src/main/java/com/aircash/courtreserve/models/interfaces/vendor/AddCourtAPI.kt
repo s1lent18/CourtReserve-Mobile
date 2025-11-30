@@ -1,4 +1,4 @@
-package com.aircash.courtreserve.models.interfaces
+package com.aircash.courtreserve.models.interfaces.vendor
 
 import com.aircash.courtreserve.models.model.AddCourtRequest
 import com.aircash.courtreserve.models.model.AddCourtResponse
@@ -10,7 +10,7 @@ import retrofit2.http.Path
 
 interface AddCourtAPI {
 
-    @POST("/vendor/{id}/addCourt")
+    @POST("/court/{id}/addCourt")
     suspend fun addCourt(
         @Path(value = "id") vendorId : Long,
         @Header("Authorization") token : String,

@@ -3,8 +3,8 @@ package com.aircash.courtreserve.viewmodels.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aircash.courtreserve.models.interfaces.CreateTeamAPI
-import com.aircash.courtreserve.models.interfaces.GetSingleTeamAPI
+import com.aircash.courtreserve.models.interfaces.user.CreateTeamAPI
+import com.aircash.courtreserve.models.interfaces.user.GetSingleTeamAPI
 import com.aircash.courtreserve.models.model.GetSingleTeamResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

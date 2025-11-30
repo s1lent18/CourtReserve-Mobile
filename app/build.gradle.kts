@@ -90,4 +90,11 @@ dependencies {
     implementation(libs.androidx.camera.extensions)
 
     implementation(libs.accompanist.permissions)
+
+    // Supabase
+
+    implementation(libs.storage.kt)
+    implementation(libs.postgrest.kt)
+
+    implementation(libs.ktor.client.okhttp)
 }

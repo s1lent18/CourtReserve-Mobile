@@ -2,8 +2,8 @@ package com.aircash.courtreserve.viewmodels.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aircash.courtreserve.models.interfaces.UserLoginAPI
-import com.aircash.courtreserve.models.interfaces.UserRegistrationAPI
+import com.aircash.courtreserve.models.interfaces.user.UserLoginAPI
+import com.aircash.courtreserve.models.interfaces.user.UserRegistrationAPI
 import com.aircash.courtreserve.models.model.LoginRequest
 import com.aircash.courtreserve.models.model.LoginResponse
 import com.aircash.courtreserve.models.model.RegisterRequest

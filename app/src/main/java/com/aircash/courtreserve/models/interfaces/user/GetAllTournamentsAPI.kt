@@ -1,4 +1,4 @@
-package com.aircash.courtreserve.models.interfaces
+package com.aircash.courtreserve.models.interfaces.user
 
 import com.aircash.courtreserve.models.model.GetAllTournamentsResponse
 import retrofit2.Response
@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface GetAllTournamentsAPI {
 
-    @GET("/user/getAllTournaments")
+    @GET("/tournament/getAllTournaments")
     suspend fun getAllTournaments(
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 10,
