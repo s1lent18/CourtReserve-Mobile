@@ -10,9 +10,9 @@ interface GetPopularCourtsAPI {
 
     @GET("/court/getPopularCourts")
     suspend fun getPopularCourts(
+        @Query("location") location: String,
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 10,
-        @Query("location") location: String,
-        @Header("Authorization") token : String,
+        @Header("Authorization") token: String
     ): Response<GetPopularCourtsResponse>
 }
