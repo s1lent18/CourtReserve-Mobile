@@ -1,5 +1,7 @@
 package com.aircash.courtreserve
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,6 +13,7 @@ import com.aircash.courtreserve.viewmodels.navigation.NavGraph
 import com.aircash.courtreserve.viewmodels.navigation.Screens
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.rememberPermissionState
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.jan.supabase.SupabaseClient
 import javax.inject.Inject
@@ -31,23 +34,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             CourtReserveTheme {
 
-                val permissions = listOf(
-                    android.Manifest.permission.CAMERA,
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
+
+                val mediaPermission = rememberPermissionState(
+                    if (Build.VERSION.SDK_INT >= 33)
+                        Manifest.permission.READ_MEDIA_IMAGES
+                    else
+                        Manifest.permission.READ_EXTERNAL_STORAGE
                 )
 
-                val permissionState = rememberMultiplePermissionsState(permissions)
-
-                LaunchedEffect(Unit) {
-                    permissionState.launchMultiplePermissionRequest()
-                }
+                val locationPermissions = rememberMultiplePermissionsState(
+                    listOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
 
                 val navController = rememberNavController()
+
                 NavGraph(
                     navController = navController,
                     startDestination = startDestination,
-                    permissionState = permissionState
+                    mediaPermission = mediaPermission,
+                    locationPermission = locationPermissions,
+                    cameraPermission = cameraPermission
                 )
             }
         }

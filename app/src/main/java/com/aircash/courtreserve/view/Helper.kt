@@ -3,6 +3,7 @@ package com.aircash.courtreserve.view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.location.Geocoder
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageCapture
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,6 +39,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,15 +57,20 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.aircash.courtreserve.CourtReserve
 import com.aircash.courtreserve.models.model.Content
 import com.aircash.courtreserve.ui.theme.Lexend
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.ui.theme.secondary
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import io.github.jan.supabase.storage.storage
 import java.time.Duration
 import java.time.LocalTime
+import java.util.Locale
 import java.util.concurrent.Executor
 
 @Composable
@@ -203,9 +212,11 @@ fun TimeSlotItem(slot: Pair<LocalTime, LocalTime>, isSelected: Boolean, onClick:
 }
 
 @Composable
-fun TournamentCard(tournament : Content) {
+fun TournamentCard(tournament : Content, navController: NavController) {
     ElevatedButton(
-        onClick = {},
+        onClick = {
+            navController.navigate("userSingleTournamentPage/${tournament.id}")
+        },
         modifier = Modifier.fillMaxWidth(fraction = 0.9f),
         shape = RoundedCornerShape(14.dp)
     ) {
@@ -332,9 +343,7 @@ fun LastPhotoPreview(
     val capturedPhoto: ImageBitmap = remember(lastCapturedPhoto.hashCode()) { lastCapturedPhoto.asImageBitmap() }
 
     Card(
-        modifier = modifier
-            .size(128.dp)
-            .padding(16.dp),
+        modifier = modifier.fillMaxSize(),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = MaterialTheme.shapes.large
     ) {
@@ -381,4 +390,31 @@ suspend fun deleteImage(context: Context, path: String) {
     supabase.storage
         .from("images")
         .delete(paths = listOf(path))
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun RequestLocationPermission(onPermissionGranted: () -> Unit) {
+    val permissionState = rememberPermissionState(android.Manifest.permission.ACCESS_FINE_LOCATION)
+
+    LaunchedEffect(key1 = permissionState.status.isGranted) {
+        if (permissionState.status.isGranted) {
+            onPermissionGranted()
+        }
+    }
+
+    if (!permissionState.status.isGranted) {
+        SideEffect { permissionState.launchPermissionRequest() }
+    }
+}
+
+fun getCityFromLocation(context: Context, latitude: Double, longitude: Double): String {
+    return try {
+        val geocoder = Geocoder(context, Locale("en"))
+        val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+        val city = addresses?.firstOrNull()?.locality
+        if (!city.isNullOrEmpty()) city else "Unknown"
+    } catch (e: Exception) {
+        "Unknown"
+    }
 }

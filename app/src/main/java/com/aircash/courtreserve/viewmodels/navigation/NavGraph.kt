@@ -19,12 +19,15 @@ import com.aircash.courtreserve.view.UserHome
 import com.aircash.courtreserve.view.UserLanding
 import com.aircash.courtreserve.view.UserSignup
 import com.aircash.courtreserve.view.UserSinglePage
+import com.aircash.courtreserve.view.UserTournamentPage
 import com.aircash.courtreserve.view.VendorHome
 import com.aircash.courtreserve.view.VendorLanding
 import com.aircash.courtreserve.view.VendorSignup
 import com.aircash.courtreserve.view.VendorSinglePage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.MultiplePermissionsState
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -32,7 +35,9 @@ import kotlinx.coroutines.launch
 fun NavGraph(
     navController: NavHostController = rememberNavController(),
     startDestination: String,
-    permissionState: MultiplePermissionsState
+    mediaPermission: PermissionState,
+    cameraPermission: PermissionState,
+    locationPermission: MultiplePermissionsState
 ) {
 
     val context = LocalContext.current
@@ -174,9 +179,30 @@ fun NavGraph(
         ) {
             Account(
                 navController = navController,
-                hasPermission = permissionState.allPermissionsGranted,
-                onRequestPermission = permissionState::launchMultiplePermissionRequest
+                hasCameraPermission = cameraPermission.status.isGranted,
+                hasMediaPermission = mediaPermission.status.isGranted,
+                onRequestCameraPermission = cameraPermission::launchPermissionRequest,
+                onRequestMediaPermission = mediaPermission ::launchPermissionRequest
             )
+        }
+
+        this.composable(
+            route = Screens.UserSingleTournamentPage.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.IntType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: -1
+
+            if (id != -1) {
+                UserTournamentPage(
+                    id = id,
+                    navController = navController
+                )
+            }
         }
     }
 }

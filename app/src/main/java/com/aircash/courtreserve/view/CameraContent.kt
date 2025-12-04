@@ -1,74 +1,157 @@
 package com.aircash.courtreserve.view
 
-import android.content.Context
+import android.Manifest
 import android.graphics.Bitmap
-import android.graphics.Color
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.LinearLayout
+import android.util.Log
+import androidx.camera.core.CameraSelector
+import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Cameraswitch
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment.Companion.BottomStart
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 
+private const val TAG = "CameraDebug"
+
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CameraContent(
     onPhotoCaptured: (Bitmap) -> Unit,
     lastCapturedPhoto: Bitmap? = null
 ) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var capturedPhoto by remember { mutableStateOf(lastCapturedPhoto) }
+    val permissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
-    val context: Context = LocalContext.current
-    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
-    val cameraController: LifecycleCameraController = remember { LifecycleCameraController(context) }
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = { Text(text = "Take photo") },
-                onClick = { capturePhoto(context, cameraController, onPhotoCaptured) },
-                icon = { Icon(imageVector = Icons.Default.Camera, contentDescription = "Camera capture icon") }
+    // Create controller
+    val cameraController = remember {
+        Log.d(TAG, "Creating LifecycleCameraController")
+        LifecycleCameraController(context).apply {
+            Log.d(TAG, "Enabling use cases: IMAGE_CAPTURE + IMAGE_ANALYSIS")
+            setEnabledUseCases(
+                CameraController.IMAGE_CAPTURE or CameraController.IMAGE_ANALYSIS
             )
         }
-    ) { paddingValues: PaddingValues ->
+    }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+    // Handle permission only
+    LaunchedEffect(permissionState.status) {
+        Log.d(TAG, "Permission changed: granted = ${permissionState.status.isGranted}")
+
+        if (!permissionState.status.isGranted) {
+            Log.d(TAG, "Requesting CAMERA permission…")
+            permissionState.launchPermissionRequest()
+        }
+    }
+
+    Scaffold(
+        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButton = {
+            if (capturedPhoto == null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    ExtendedFloatingActionButton(
+                        text = { Text("Take photo") },
+                        onClick = { capturePhoto(context, cameraController) { bitmap ->
+                            capturedPhoto = bitmap
+                            onPhotoCaptured(bitmap)
+                        } },
+                        icon = { Icon(Icons.Default.Camera, null) }
+                    )
+
+                    AddWidth(16.dp)
+
+                    ExtendedFloatingActionButton(
+                        text = { Text("Switch Camera") },
+                        onClick = { cameraController.cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA },
+                        icon = { Icon(Icons.Default.Cameraswitch, null) }
+                    )
+                }
+            }
+            else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    ExtendedFloatingActionButton(
+                        text = { Text("Proceed to Update") },
+                        onClick = {  },
+                        icon = { Icon(Icons.Default.ChevronRight, null) }
+                    )
+
+                    AddWidth(16.dp)
+
+                    ExtendedFloatingActionButton(
+                        text = { Text("Retake") },
+                        onClick = { capturedPhoto = null },
+                        icon = { Icon(Icons.Default.Cameraswitch, null) }
+                    )
+                }
+            }
+        }
+    ) { padding ->
+        Box(Modifier.fillMaxSize()) {
+
             AndroidView(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                factory = { context ->
-                    PreviewView(context).apply {
-                        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                        setBackgroundColor(Color.BLACK)
-                        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                        scaleType = PreviewView.ScaleType.FILL_START
-                    }.also { previewView ->
-                        previewView.controller = cameraController
-                        cameraController.bindToLifecycle(lifecycleOwner)
+                    .padding(padding),
+                factory = { ctx ->
+                    Log.d(TAG, "PreviewView factory invoked")
+                    PreviewView(ctx).apply {
+
+                        scaleType = PreviewView.ScaleType.FILL_CENTER
+
+                        Log.d(TAG, "Binding cameraController to lifecycle…")
+                        try {
+                            cameraController.bindToLifecycle(lifecycleOwner)
+                            Log.d(TAG, "bindToLifecycle succeeded")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "bindToLifecycle FAILED", e)
+                        }
+
+                        controller = cameraController
+                        Log.d(TAG, "Controller set on PreviewView")
                     }
                 }
             )
 
-            if (lastCapturedPhoto != null) {
+            if (capturedPhoto != null) {
                 LastPhotoPreview(
-                    modifier = Modifier.align(alignment = BottomStart),
-                    lastCapturedPhoto = lastCapturedPhoto
+                    modifier = Modifier.align(Alignment.BottomStart),
+                    lastCapturedPhoto = capturedPhoto!!
                 )
             }
         }
