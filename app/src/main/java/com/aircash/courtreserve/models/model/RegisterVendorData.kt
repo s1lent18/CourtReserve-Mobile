@@ -4,7 +4,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class RegisterVendorData(
     val createdAt: String,
+    val coverImage: String,
     val email: String,
     val id: Int,
+    val location: String,
     val name: String
 )

@@ -2,7 +2,8 @@ package com.aircash.courtreserve.models.model
 
 data class Booking(
     val advance: Int,
-    val court: Court,
+    val courtId: Int,
+    val courtName: String,
     val created: String,
     val endTime: String,
     val id: Int,
@@ -10,5 +11,6 @@ data class Booking(
     val startTime: String,
     val status: String,
     val toBePaid: Int,
-    val user: User
+    val userId: Int,
+    val userName: String
 )

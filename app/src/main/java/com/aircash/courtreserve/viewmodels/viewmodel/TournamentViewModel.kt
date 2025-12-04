@@ -37,11 +37,11 @@ class TournamentViewModel @Inject constructor(
             try {
                 val response = getAllTournamentsAPI.getAllTournaments(token = token, location = location)
                 if (response.isSuccessful) {
-                    Log.d("Check", "${response.body()}")
+                    Log.d("Check Tournament", "${response.body()}")
                     _getAllTournamentsResult.value = response.body()
                     _errorMessage.value = null
                 } else {
-                    _errorMessage.value = "Error ${response.code()}: ${response.message()}"
+                    _errorMessage.value = "Error Tournament${response.code()}: ${response.message()}"
                     _getAllTournamentsResult.value = null
                 }
             } catch (e: Exception) {

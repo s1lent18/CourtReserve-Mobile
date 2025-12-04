@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 data class VendorRegisterRequest(
     val email: String,
     val name: String,
-    val password: String
+    val password: String,
+    val location: String,
 )
