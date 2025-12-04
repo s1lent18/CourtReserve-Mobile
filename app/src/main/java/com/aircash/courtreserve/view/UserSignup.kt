@@ -1,5 +1,6 @@
 package com.aircash.courtreserve.view
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -52,6 +53,7 @@ import com.aircash.courtreserve.ui.theme.buttonLight
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.viewmodels.navigation.Screens
 import com.aircash.courtreserve.viewmodels.viewmodel.UserAuthViewModel
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.delay
 
 @Composable
@@ -71,6 +73,17 @@ fun UserSignup(
         val registerResult = userAuthViewModel.registerResult.collectAsState()
         var requestreceived by remember { mutableStateOf(false) }
         var isLoading by remember { mutableStateOf(false) }
+        var city by remember { mutableStateOf("Unknown") }
+
+        @SuppressLint("MissingPermission")
+        RequestLocationPermission {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let {
+                    city = getCityFromLocation(context, it.latitude, it.longitude)
+                }
+            }
+        }
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -84,11 +97,14 @@ fun UserSignup(
                 val (title, loginField) = createRefs()
 
                 Row (
-                    modifier = Modifier.constrainAs(title) {
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        bottom.linkTo(loginField.top, margin = 50.dp)
-                    }.fillMaxWidth(fraction = 0.9f).height(50.dp),
+                    modifier = Modifier
+                        .constrainAs(title) {
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            bottom.linkTo(loginField.top, margin = 50.dp)
+                        }
+                        .fillMaxWidth(fraction = 0.9f)
+                        .height(50.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -182,11 +198,34 @@ fun UserSignup(
                         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                     )
 
+                    AddHeight(20.dp)
+
+                    Row (
+                        modifier = Modifier.fillMaxWidth(fraction = 0.9f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Text("Your City", fontFamily = Lexend)
+                    }
+
+                    AddHeight(20.dp)
+
+                    Input(
+                        label = "City",
+                        value = city,
+                        onValueChange = {
+                            city = it
+                        },
+                        color = color
+                    )
+
                     AddHeight(40.dp)
 
                     if (!isLoading) {
                         Button(
-                            modifier = Modifier.fillMaxWidth(fraction = 0.9f).height(50.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(fraction = 0.9f)
+                                .height(50.dp),
                             shape = RoundedCornerShape(20.dp),
                             onClick = {
                                 if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty()) {
@@ -197,7 +236,8 @@ fun UserSignup(
                                         RegisterRequest(
                                             email = email,
                                             password = password,
-                                            name = name
+                                            name = name,
+                                            location = city
                                         )
                                     userAuthViewModel.userRegister(userRegisterRequest)
                                 }
@@ -227,7 +267,9 @@ fun UserSignup(
                     }
                     else {
                         Box(
-                            modifier = Modifier.fillMaxWidth(fraction = 0.9f).height(50.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(fraction = 0.9f)
+                                .height(50.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))

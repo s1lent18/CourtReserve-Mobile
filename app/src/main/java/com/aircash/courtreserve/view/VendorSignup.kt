@@ -1,5 +1,6 @@
 package com.aircash.courtreserve.view
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -52,6 +53,7 @@ import com.aircash.courtreserve.ui.theme.buttonLight
 import com.aircash.courtreserve.ui.theme.primary
 import com.aircash.courtreserve.viewmodels.navigation.Screens
 import com.aircash.courtreserve.viewmodels.viewmodel.VendorAuthViewModel
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.delay
 
 @Composable
@@ -71,6 +73,17 @@ fun VendorSignup(
         val registerResult = vendorAuthViewModel.registerResult.collectAsState()
         var requestreceived by remember { mutableStateOf(false) }
         var isLoading by remember { mutableStateOf(false) }
+        var city by remember { mutableStateOf("Unknown") }
+
+        @SuppressLint("MissingPermission")
+        RequestLocationPermission {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let {
+                    city = getCityFromLocation(context, it.latitude, it.longitude)
+                }
+            }
+        }
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -182,6 +195,27 @@ fun VendorSignup(
                         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                     )
 
+                    AddHeight(20.dp)
+
+                    Row (
+                        modifier = Modifier.fillMaxWidth(fraction = 0.9f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Text("Your City", fontFamily = Lexend)
+                    }
+
+                    AddHeight(20.dp)
+
+                    Input(
+                        label = "City",
+                        value = city,
+                        onValueChange = {
+                            city = it
+                        },
+                        color = color
+                    )
+
                     AddHeight(40.dp)
 
                     if (!isLoading) {
@@ -197,7 +231,8 @@ fun VendorSignup(
                                         VendorRegisterRequest(
                                             email = email,
                                             password = password,
-                                            name = name
+                                            name = name,
+                                            location = city
                                         )
                                     vendorAuthViewModel.vendorRegister(vendorRegisterRequest)
                                 }

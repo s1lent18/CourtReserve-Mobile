@@ -15,4 +15,5 @@ sealed class Screens(val route: String) {
     data object UserTeamPage : Screens("userTeamPage/{id}")
     data object UserSingleUserPage : Screens("userSingleUserPage/{id}")
     data object Account : Screens("accountPage")
+    data object UserSingleTournamentPage : Screens("userSingleTournamentPage/{id}")
 }

@@ -151,9 +151,11 @@ fun UserSinglePage(
         }
 
         LaunchedEffect(addBookingResult) {
-            delay(2000)
-            clicked = false
-            navController.navigate(route = Screens.UserHome.route)
+            if (addBookingResult != null) {
+                delay(2000)
+                clicked = false
+                navController.navigate(route = Screens.UserHome.route)
+            }
         }
 
         val displayList = court?.bookedTimes?.map { booking ->

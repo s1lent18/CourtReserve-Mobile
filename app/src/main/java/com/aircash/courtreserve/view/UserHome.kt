@@ -246,10 +246,10 @@ fun UserHome(
         LaunchedEffect(userData) {
             Log.d("UserDataCheck", "$userData")
             if (userData != null) {
-                courtViewModel.getPopularCourts(token = userData.token, location = "Karachi")
+                courtViewModel.getPopularCourts(token = userData.token, location = userData.location)
                 tournamentViewModel.getAllTournaments(
                     token = "Bearer ${userData.token}",
-                    location = "Karachi"
+                    location = userData.location
                 )
             }
         }
@@ -317,7 +317,9 @@ fun UserHome(
                             }
 
                             IconButton(
-                                onClick = {  }
+                                onClick = {
+                                    navController.navigate(Screens.Account.route)
+                                }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.AccountCircle,
@@ -426,14 +428,14 @@ fun UserHome(
                                     }
                                 }
                                 else {
-                                    items(popularCourts.courts.size) { index ->
+                                    items(popularCourts.content.size) { index ->
                                         CourtInfo(
-                                            court = popularCourts.courts[index],
+                                            court = popularCourts.content[index],
                                             rowHeight = 200.dp,
                                             modifier = Modifier.width(cardWidth),
                                             onClick =  {
-                                                Log.d("navigation Check", "${popularCourts.courts[index].id}")
-                                                navController.navigate("userSingleScreen/${popularCourts.courts[index].id}")
+                                                Log.d("navigation Check", "${popularCourts.content[index].id}")
+                                                navController.navigate("userSingleScreen/${popularCourts.content[index].id}")
                                             }
                                         )
                                     }
@@ -470,15 +472,18 @@ fun UserHome(
 
                     when (selectedOption.value) {
                         "UPCOMING" -> items(upcoming) { tournament ->
-                            TournamentCard(tournament)
+                            AddHeight(10.dp)
+                            TournamentCard(tournament, navController = navController)
                             AddHeight(10.dp)
                         }
                         "ONGOING" -> items(ongoing) { tournament ->
-                            TournamentCard(tournament)
+                            AddHeight(10.dp)
+                            TournamentCard(tournament, navController = navController)
                             AddHeight(10.dp)
                         }
                         "RESULTS" -> items(results) { tournament ->
-                            TournamentCard(tournament)
+                            AddHeight(10.dp)
+                            TournamentCard(tournament, navController = navController)
                             AddHeight(10.dp)
                         }
                     }
