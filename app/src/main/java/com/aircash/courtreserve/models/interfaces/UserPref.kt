@@ -6,6 +6,7 @@ import com.aircash.courtreserve.models.model.UserData
 import com.aircash.courtreserve.models.model.VendorData
 import kotlinx.coroutines.flow.Flow
 
+val TEAM_ID_KEY = stringPreferencesKey("teamId")
 val USER_DATA_KEY: Preferences.Key<String> = stringPreferencesKey("userData")
 val VENDOR_DATA_KEY: Preferences.Key<String> = stringPreferencesKey("vendorData")
 val TIMESTAMP_KEY = stringPreferencesKey("timestamp")
@@ -17,8 +18,12 @@ interface UserPref {
     fun getUserRole(): Flow<String>
     fun getTimeStamp(): Flow<String>
 
+    fun getTeamId(): Flow<String>
+
     suspend fun saveVendorData(vendorData: VendorData)
     suspend fun saveUserData(userData: UserData)
     suspend fun saveUserRole(role: String)
     suspend fun saveTimeStamp(timestamp: String)
+
+    suspend fun saveTeamId(teamId : String)
 }

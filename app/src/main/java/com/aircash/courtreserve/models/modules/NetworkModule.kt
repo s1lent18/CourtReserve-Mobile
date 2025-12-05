@@ -5,6 +5,7 @@ import com.aircash.courtreserve.R
 import com.aircash.courtreserve.models.interfaces.user.AddBookingAPI
 import com.aircash.courtreserve.models.interfaces.vendor.AddCourtAPI
 import com.aircash.courtreserve.models.interfaces.user.AddReviewAPI
+import com.aircash.courtreserve.models.interfaces.user.AddTeamMemberAPI
 import com.aircash.courtreserve.models.interfaces.user.CreateTeamAPI
 import com.aircash.courtreserve.models.interfaces.user.GetAllBookingsAPI
 import com.aircash.courtreserve.models.interfaces.vendor.GetAllCourtsAPI
@@ -13,6 +14,7 @@ import com.aircash.courtreserve.models.interfaces.user.GetCourtAPI
 import com.aircash.courtreserve.models.interfaces.user.GetPopularCourtsAPI
 import com.aircash.courtreserve.models.interfaces.user.GetSingleTeamAPI
 import com.aircash.courtreserve.models.interfaces.user.GetSingleTournamentAPI
+import com.aircash.courtreserve.models.interfaces.user.GetTeamAssociationAPI
 import com.aircash.courtreserve.models.interfaces.vendor.GetVendorSingleCourtAPI
 import com.aircash.courtreserve.models.interfaces.user.UserLoginAPI
 import com.aircash.courtreserve.models.interfaces.user.UserRegistrationAPI
@@ -141,5 +143,17 @@ object NetworkModule {
     @Singleton
     fun provideGetSingleTeamAPI(retrofit: Retrofit) : GetSingleTeamAPI {
         return retrofit.create(GetSingleTeamAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddTeamMemberAPI(retrofit: Retrofit) : AddTeamMemberAPI {
+        return retrofit.create(AddTeamMemberAPI::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTeamAssociationAPI(retrofit: Retrofit) : GetTeamAssociationAPI {
+        return retrofit.create(GetTeamAssociationAPI::class.java)
     }
 }

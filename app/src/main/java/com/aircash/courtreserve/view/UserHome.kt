@@ -1,6 +1,7 @@
 package com.aircash.courtreserve.view
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -148,6 +150,7 @@ fun UserHome(
     val popularCourts = courtViewModel.getPopularCourtsResult.collectAsState().value
     val allTournaments = tournamentViewModel.getAllTournamentsResult.collectAsState().value
     val userData = userTokenViewModel.userData.collectAsState().value
+    val teamId = userTokenViewModel.teamId.collectAsState().value
     var searchQuery by remember { mutableStateOf("") }
     val isLoading = courtViewModel.isLoading.collectAsState().value
     val errorMessage = courtViewModel.errorMessage.collectAsState().value
@@ -155,6 +158,7 @@ fun UserHome(
     val upcoming = remember { mutableStateListOf<Content>() }
     val ongoing = remember { mutableStateListOf<Content>() }
     val results = remember { mutableStateListOf<Content>() }
+    val context = LocalContext.current
 
     LaunchedEffect(allTournaments) {
         Log.d("Tournament Check", "$allTournaments")
@@ -176,6 +180,15 @@ fun UserHome(
                 start.isEqual(today) || end.isEqual(today) -> ongoing.add(tournament)
                 start.isBefore(today) && end.isBefore(today) -> results.add(tournament)
             }
+        }
+    }
+
+    LaunchedEffect(teamId, userData) {
+        if (teamId.isBlank() && userData != null) {
+            userTokenViewModel.saveTeamAssociation(
+                token = "Bearer ${userData.token}",
+                id = userData.id
+            )
         }
     }
 
@@ -218,7 +231,11 @@ fun UserHome(
 
                                     }
                                     NavigationBarItems.Team -> {
-
+                                        if (teamId.isNotBlank()) {
+                                            navController.navigate("userTeamPage/${teamId}")
+                                        } else {
+                                            Toast.makeText(context, "Please Wait a Moment", Toast.LENGTH_LONG).show()
+                                        }
                                     }
                                 }
                             },

@@ -3,8 +3,11 @@ package com.aircash.courtreserve.viewmodels.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aircash.courtreserve.models.interfaces.user.AddTeamMemberAPI
 import com.aircash.courtreserve.models.interfaces.user.CreateTeamAPI
 import com.aircash.courtreserve.models.interfaces.user.GetSingleTeamAPI
+import com.aircash.courtreserve.models.model.AddTeamMemberRequest
+import com.aircash.courtreserve.models.model.AddTeamMemberResponse
 import com.aircash.courtreserve.models.model.GetSingleTeamResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,11 +18,15 @@ import javax.inject.Inject
 @HiltViewModel
 class TeamViewModel @Inject constructor(
     private val createTeamAPI: CreateTeamAPI,
-    private val getSingleTeamAPI: GetSingleTeamAPI
+    private val getSingleTeamAPI: GetSingleTeamAPI,
+    private val addTeamMemberAPI: AddTeamMemberAPI
 ) : ViewModel() {
 
     private val _getSingleTeamResult = MutableStateFlow<GetSingleTeamResponse?>(null)
     val getSingleTeamResult : StateFlow<GetSingleTeamResponse?> = _getSingleTeamResult
+
+    private val _addTeamMemberResult = MutableStateFlow<AddTeamMemberResponse?>(null)
+    val addTeamMemberResult : StateFlow<AddTeamMemberResponse?> = _addTeamMemberResult
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
@@ -43,6 +50,28 @@ class TeamViewModel @Inject constructor(
             } catch (e: Exception) {
                 _errorMessage.value = "Network error: ${e.localizedMessage}"
                 _getSingleTeamResult.value = null
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun addTeamMember(token : String, addTeamMemberRequest: AddTeamMemberRequest) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = addTeamMemberAPI.addTeamMember(token = token, addTeamMemberRequest)
+                if (response.isSuccessful) {
+                    Log.d("Check", "${response.body()}")
+                    _addTeamMemberResult.value = response.body()
+                    _errorMessage.value = null
+                } else {
+                    _errorMessage.value = "Error ${response.code()}: ${response.message()}"
+                    _addTeamMemberResult.value = null
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Network error: ${e.localizedMessage}"
+                _addTeamMemberResult.value = null
             } finally {
                 _isLoading.value = false
             }

@@ -54,6 +54,14 @@ class UserPrefImpl (private val dataStore: DataStore<Preferences>) : UserPref {
         }
     }
 
+    override fun getTeamId(): Flow<String> {
+        return dataStore.data.catch {
+            emit(emptyPreferences())
+        }.map {
+            it[TEAM_ID_KEY]?: ""
+        }
+    }
+
     override fun getUserRole(): Flow<String> {
         return dataStore.data.catch {
             emit(emptyPreferences())
@@ -80,6 +88,12 @@ class UserPrefImpl (private val dataStore: DataStore<Preferences>) : UserPref {
     override suspend fun saveTimeStamp(timestamp: String) {
         dataStore.edit {
             it[TIMESTAMP_KEY] = timestamp
+        }
+    }
+
+    override suspend fun saveTeamId(teamId: String) {
+        dataStore.edit {
+            it[TEAM_ID_KEY] = teamId
         }
     }
 
