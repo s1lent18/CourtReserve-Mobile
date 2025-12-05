@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -44,12 +45,14 @@ private const val TAG = "CameraDebug"
 @Composable
 fun CameraContent(
     onPhotoCaptured: (Bitmap) -> Unit,
-    lastCapturedPhoto: Bitmap? = null
+    lastCapturedPhoto: Bitmap? = null,
+    navController: NavController
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var capturedPhoto by remember { mutableStateOf(lastCapturedPhoto) }
     val permissionState = rememberPermissionState(Manifest.permission.CAMERA)
+    var final by remember { mutableStateOf(false) }
 
     // Create controller
     val cameraController = remember {
@@ -100,31 +103,35 @@ fun CameraContent(
                 }
             }
             else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    ExtendedFloatingActionButton(
-                        text = { Text("Proceed to Update") },
-                        onClick = {  },
-                        icon = { Icon(Icons.Default.ChevronRight, null) }
-                    )
+                if (!final) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        ExtendedFloatingActionButton(
+                            text = { Text("Proceed to Update") },
+                            onClick = {
+                                final = true
+                            },
+                            icon = { Icon(Icons.Default.ChevronRight, null) }
+                        )
 
-                    AddWidth(16.dp)
+                        AddWidth(16.dp)
 
-                    ExtendedFloatingActionButton(
-                        text = { Text("Retake") },
-                        onClick = { capturedPhoto = null },
-                        icon = { Icon(Icons.Default.Cameraswitch, null) }
-                    )
+                        ExtendedFloatingActionButton(
+                            text = { Text("Retake") },
+                            onClick = { capturedPhoto = null },
+                            icon = { Icon(Icons.Default.Cameraswitch, null) }
+                        )
+                    }
                 }
             }
         }
     ) { padding ->
         Box(Modifier.fillMaxSize()) {
 
-            AndroidView(
+             AndroidView(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
@@ -151,7 +158,9 @@ fun CameraContent(
             if (capturedPhoto != null) {
                 LastPhotoPreview(
                     modifier = Modifier.align(Alignment.BottomStart),
-                    lastCapturedPhoto = capturedPhoto!!
+                    lastCapturedPhoto = capturedPhoto!!,
+                    final = final,
+                    navController = navController
                 )
             }
         }

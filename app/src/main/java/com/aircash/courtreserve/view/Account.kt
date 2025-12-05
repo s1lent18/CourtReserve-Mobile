@@ -154,7 +154,8 @@ fun Account(
                 Log.d("CameraDebug", "Check")
                 CameraContent(
                     onPhotoCaptured = cameraViewModel::storePhotoInGallery,
-                    lastCapturedPhoto = cameraState.capturedImage
+                    lastCapturedPhoto = cameraState.capturedImage,
+                    navController = navController
                 )
             } else {
                 Column {
